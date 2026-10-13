@@ -410,3 +410,101 @@ div.card:has(> .card-heading + .smalltext + .voice-box) > .card-heading h2 span{
     inset: -1px;
   }
 }
+
+/* Agent Inspector & Vernacular UI additions */
+.judge-badge {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 100%) !important;
+  color: #a7f3d0 !important;
+  border: 1px solid #059669 !important;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+.judge-badge:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+}
+
+.trace-pill {
+  background: #10b981;
+  color: #064e3b;
+  font-size: 10px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 1px 6px;
+  margin-left: 4px;
+}
+
+.doubt-pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 6px 0;
+}
+
+.doubt-pill {
+  background: #fbf7ef;
+  border: 1px solid #e3d5be;
+  color: #4a3b2c;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.doubt-pill:hover {
+  background: #f5ecd8;
+  border-color: #cb9b51;
+  transform: translateY(-1px);
+  color: #2b1f13;
+}
+
+.odia-font {
+  font-family: 'Noto Sans Oriya', 'Kalinga', 'Oriya Sangam MN', system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+.analogy-highlight {
+  background: #fef9ee;
+  border-left: 4px solid #d97706;
+  border-radius: 0 12px 12px 0;
+  padding: 14px 16px;
+  margin: 12px 0;
+}
+
+.quiz-option {
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #dcd1be;
+  background: #fffdfa;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.quiz-option:hover {
+  background: #f7efe1;
+  border-color: #bfa886;
+}
+.quiz-option.selected-correct {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #065f46;
+  font-weight: 600;
+}
+.quiz-option.selected-wrong {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #991b1b;
+}
+
