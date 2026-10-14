@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Lakshya AI — Vernacular Science Tutor"
+description = "A voice-first science tutoring PWA for students on shared, low-bandwidth phones. Practice concepts, follow a study plan, record offline doubts, and review learner progress."
+version = "1.0.0"
+id = "artifacts/lakshya-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25364
+
+[services.development]
+run = "pnpm --filter @workspace/lakshya-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/lakshya-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/lakshya-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25364"
+BASE_PATH = "/"
