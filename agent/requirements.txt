@@ -1,16 +1,24 @@
-langchain>=0.2.0
-langgraph>=0.1.0
-langchain-core>=0.2.0
-fastapi>=0.110.0
-uvicorn>=0.28.0
-pydantic>=2.7.0
-motor>=3.3.0
-pymongo>=4.6.0
-passlib>=1.7.4
-bcrypt>=4.0.0
-python-jose>=3.3.0
-python-dotenv>=1.0.0
-python-multipart>=0.0.9
-email-validator>=2.0.0
-gtts>=2.5.0
+# ===============================================
+# Pinned Production Dependencies for EkalSahayak
+# ===============================================
 
+fastapi==0.143.0
+uvicorn==0.54.0
+pydantic==2.14.1
+pydantic-settings==2.15.0
+motor==3.7.1
+pymongo==4.18.3
+passlib==1.7.4
+bcrypt==5.0.0
+python-jose==3.5.0
+python-dotenv==1.2.4
+python-multipart==0.0.32
+email-validator==2.3.0
+gTTS==2.5.4
+cachetools==7.2.1
+slowapi==0.1.10
+websockets==16.1.1
+prometheus-fastapi-instrumentator==8.1.0
+langchain==1.4.5
+langgraph==1.2.15
+langchain-core==1.6.10
