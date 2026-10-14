@@ -1,10 +1,10 @@
-# Sunita AI: Agentic EdTech Blueprint & Implementation Log
+# Lakshya AI: Agentic EdTech Blueprint & Implementation Log
 
 ## Status: Step 1 (The Agentic Brain) Completed ✅
 
 ### Core Architecture: Deterministic State Graph (Workflow Agent)
 - **Framework**: `LangGraph` + `LangChain` + `FastAPI` (Python 3.13)
-- **Target Persona**: Sunita, Class 9 rural/tribal student (BSE Odisha Science curriculum, Kui home language, 1-hour shared smartphone window)
+- **Target Persona**: Lakshya, Class 9 rural/tribal student (BSE Odisha Science curriculum, Kui home language, 1-hour shared smartphone window)
 - **Why Deterministic Workflow?**:
   - Pedagogy cannot afford hallucinations or unbounded tool execution.
   - Guarantees foundational prerequisite checks, cultural grounding, formative micro-drills, and persistent profile updates.
@@ -16,7 +16,7 @@
 
 1. [`state.py`](file:///c:/Codes/nmit/agent/state.py):
    - `AgentState` TypedDict definition: query, detected topic, student profile, prerequisite diagnosis, vernacular analogies, micro-quiz, updated mastery, audio script, and step-by-step decision `traces`.
-   - `StudentProfile` Pydantic model: Sunita's grade, language medium, mastery graph, known misconceptions, and scheduled nudges.
+   - `StudentProfile` Pydantic model: Lakshya's grade, language medium, mastery graph, known misconceptions, and scheduled nudges.
 
 2. [`curriculum_kb.py`](file:///c:/Codes/nmit/agent/curriculum_kb.py):
    - BSE Odisha Class 9 Science offline knowledge base:
@@ -58,7 +58,7 @@
 7. [`server.py`](file:///c:/Codes/nmit/agent/server.py):
    - FastAPI REST API:
      - `POST /api/agent/interact`: Executes the full LangGraph loop with decision traces.
-     - `GET /api/agent/profile`: Sunita's real-time mastery map.
+     - `GET /api/agent/profile`: Lakshya's real-time mastery map.
      - `POST /api/agent/quiz-submit`: Instant quiz feedback & mastery updates.
      - `GET /api/agent/offline-pack`: Downloadable offline curriculum bundle.
      - `POST /api/agent/sync`: Reconnection sync batch handler.
@@ -71,7 +71,7 @@
 ### Status: Step 2 (The Agent Thought / Decision Trace UI) Completed ✅
 
 #### Frontend & UI Architecture Created:
-1. **Student Screen ([`HomePage`](file:///c:/Codes/nmit/frontend/artifacts/sunita-ai/src/App.tsx))**:
+1. **Student Screen ([`HomePage`](file:///c:/Codes/nmit/frontend/artifacts/lakshya-ai/src/App.tsx))**:
    - Simple, warm, voice-first Odia interface: *“ନମସ୍କାର ସୁନିତା! ଆଜି ତୁମ ମନରେ କ’ଣ ପ୍ରଶ୍ନ ଅଛି?”*
    - Pre-loaded instant doubt pills in Odia:
      - 🍵 *“ମାଟି ମାଠିଆରେ ପାଣି କାହିଁକି ଥଣ୍ଡା ରହେ? ପାଣି କଣ ୧୦୦ ଡିଗ୍ରୀରେ ଫୁଟୁଛି?”* (Evaporation vs Boiling)
@@ -83,18 +83,18 @@
    - Formative interactive micro-quiz (2 questions) with immediate feedback and mastery updates.
    - Autonomous next-day study nudge display.
 
-2. **Judge Inspector Mode ([`AgentTraceInspector.tsx`](file:///c:/Codes/nmit/frontend/artifacts/sunita-ai/src/components/AgentTraceInspector.tsx))**:
+2. **Judge Inspector Mode ([`AgentTraceInspector.tsx`](file:///c:/Codes/nmit/frontend/artifacts/lakshya-ai/src/components/AgentTraceInspector.tsx))**:
    - Header button: **"🧠 Agent Inspector (Judge Mode)"** with live step counter badge.
    - Slide-out inspector drawer showing:
      - Step-by-step decision sequence:
-       - **Thought**: *"Sunita asked about evaporation, but confused it with boiling (thinks 100°C is required)."*
+       - **Thought**: *"Lakshya asked about evaporation, but confused it with boiling (thinks 100°C is required)."*
        - **Tool Called**: `assess_prerequisite_tool(concept="states_of_matter")`
        - **Action**: *"Presenting rural cooking & earthen pot cooling analogy in Odia."*
      - Tool arguments & return values inspection tab.
      - Raw JSON trace tab for CTO / technical evaluator verification.
      - Pedagogical defense rubric tab explaining why deterministic state graphs outperform unconstrained loops for Class 9.
 
-3. **Client API & Local Edge Engine ([`agent-client.ts`](file:///c:/Codes/nmit/frontend/artifacts/sunita-ai/src/lib/agent-client.ts))**:
+3. **Client API & Local Edge Engine ([`agent-client.ts`](file:///c:/Codes/nmit/frontend/artifacts/lakshya-ai/src/lib/agent-client.ts))**:
    - Connects to LangGraph FastAPI backend via `/api/agent/interact`.
    - Contains a client-side local fallback state graph that mirrors the exact same decision trace if network connectivity is severed live.
 
@@ -103,7 +103,7 @@
 ### Status: Step 3 (The Offline & Sync Layer) Completed ✅
 
 #### Offline Architecture Built:
-1. **IndexedDB Local Storage ([`offline-sync.ts`](file:///c:/Codes/nmit/frontend/artifacts/sunita-ai/src/lib/offline-sync.ts))**:
+1. **IndexedDB Local Storage ([`offline-sync.ts`](file:///c:/Codes/nmit/frontend/artifacts/lakshya-ai/src/lib/offline-sync.ts))**:
    - Stores:
      - `curriculum_cache`: Pre-caches complete **BSE Odisha Class 9 Science Unit 1 (Matter in Our Surroundings)** (54 KB payload).
      - `offline_outbox`: Records doubts, quiz attempts, and learning events taken while offline with timestamps and learner IDs.
@@ -131,8 +131,8 @@
 
 ### Status: Step 4 (The Voice & Vernacular Layer) Completed ✅
 
-#### Why Voice-First for Sunita?
-- Sunita accesses education through a shared low-end 5-inch smartphone with a 1-hour daily window.
+#### Why Voice-First for Lakshya?
+- Lakshya accesses education through a shared low-end 5-inch smartphone with a 1-hour daily window.
 - Reading dense, scientific Odia paragraphs (with complex conjunct characters / *ଯୁକ୍ତାକ୍ଷର*) on a small screen causes severe cognitive fatigue.
 - Spoken vernacular audio paired with synchronized sentence-by-sentence read-along converts reading hurdles into intuitive listening comprehension.
 
@@ -140,7 +140,7 @@
 
 1. **Speech-to-Text (STT) Layer**:
    - **Client-Side Web Speech API (`or-IN`)**:
-     - Real-time interim transcript streaming as Sunita speaks.
+     - Real-time interim transcript streaming as Lakshya speaks.
      - Live waveform and decibel level animation.
      - Priority to Odia locale (`or-IN`) with fallback to Indian English/Hindi.
    - **Backend ASR Pipeline (`/api/agent/stt`)**:
@@ -158,10 +158,10 @@
    - **Dual-Engine Architecture with Seamless Fallback**:
      - *Primary Engine*: High-Fidelity Streaming MP3 Audio (`indic_natural`) with in-memory LRU and disk caching to minimize mobile data usage.
      - *Offline Edge Fallback*: Local browser `speechSynthesis` (`SpeechSynthesisUtterance`) for zero-data execution during network severance.
-   - **Sentence-by-Sentence Read-Along (Karaoke Highlighter)** ([`OdiaAudioPlayer.tsx`](file:///c:/Codes/nmit/frontend/artifacts/sunita-ai/src/components/OdiaAudioPlayer.tsx)):
+   - **Sentence-by-Sentence Read-Along (Karaoke Highlighter)** ([`OdiaAudioPlayer.tsx`](file:///c:/Codes/nmit/frontend/artifacts/lakshya-ai/src/components/OdiaAudioPlayer.tsx)):
      - Splits explanation into natural Odia sentences.
      - Highlights the active spoken sentence with a warm glowing amber card.
-     - Sunita can tap *any* sentence to jump to and listen to just that sentence.
+     - Lakshya can tap *any* sentence to jump to and listen to just that sentence.
    - **Audio Controls**:
      - Big touch-friendly Play/Pause and Replay buttons.
      - Speed adjustments: `0.75× ଧୀରେ` (Slow - ideal for complex science concepts), `1.0×`, `1.25×`.
@@ -169,5 +169,5 @@
      - Mini audio listen buttons on formative micro-quiz questions.
 
 3. **Judge Inspector Mode Telemetry**:
-   - Dedicated **"🎧 Voice Engine"** tab in [`AgentTraceInspector.tsx`](file:///c:/Codes/nmit/frontend/artifacts/sunita-ai/src/components/AgentTraceInspector.tsx).
+   - Dedicated **"🎧 Voice Engine"** tab in [`AgentTraceInspector.tsx`](file:///c:/Codes/nmit/frontend/artifacts/lakshya-ai/src/components/AgentTraceInspector.tsx).
    - Real-time display of STT engine, TTS cache hits, phonetic transliteration samples, and pedagogical defense rubric.
