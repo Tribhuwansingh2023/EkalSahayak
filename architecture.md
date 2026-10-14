@@ -1,8 +1,8 @@
-# EkalSahayak (Sunita AI) - System Architecture Specification
+# EkalSahayak (Lakshya AI) - System Architecture Specification
 
 ## 1. Executive Architecture Overview
 
-**EkalSahayak (Sunita AI)** is an agentic, vernacular-first EdTech platform engineered specifically for Class 9 and 10 students in rural and tribal Odisha (following the BSE Odisha State Board syllabus). 
+**EkalSahayak (Lakshya AI)** is an agentic, vernacular-first EdTech platform engineered specifically for Class 9 and 10 students in rural and tribal Odisha (following the BSE Odisha State Board syllabus). 
 
 The platform addresses three structural constraints prevalent in rural education:
 1. **Cognitive & Vernacular Barrier**: Traditional education software relies on dense textbook English or formal Odia. EkalSahayak uses a voice-first, dialect-aware Indic acoustic engine with local cultural anchors (*ମାଟି ମାଠିଆ*, *ଭାତ ହାଣ୍ଡି*, *ସାପ୍ତାହିକ ହାଟ*).
@@ -144,13 +144,13 @@ Standard browser Text-to-Speech (TTS) engines have no native voice model for Odi
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Sunita as Student (Sunita)
+    actor Lakshya as Student (Lakshya)
     participant UI as Vite Web Client
     participant API as FastAPI Server
     participant Cache as Audio Cache (LRU + Disk)
     participant TTS as Indic TTS Engine
 
-    Sunita->>UI: Speaks doubt in Odia (Web Speech API or-IN)
+    Lakshya->>UI: Speaks doubt in Odia (Web Speech API or-IN)
     UI->>API: POST /api/agent/interact
     API-->>UI: Agent Response (Text + Audio Script)
     UI->>API: GET /api/agent/tts?text=...&slow=false
@@ -163,7 +163,7 @@ sequenceDiagram
         API->>Cache: Save to In-Memory LRU & Disk
     end
     API-->>UI: Audio Stream (audio/mpeg)
-    UI->>Sunita: Karaoke Sentence Highlighting Read-Along
+    UI->>Lakshya: Karaoke Sentence Highlighting Read-Along
 ```
 
 ---

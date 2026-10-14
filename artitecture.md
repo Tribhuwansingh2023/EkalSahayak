@@ -1,4 +1,4 @@
-# EkalSahayak (Sunita AI) - System Architecture
+# EkalSahayak (Lakshya AI) - System Architecture
 
 > [!NOTE]
 > The primary, detailed architecture specification is documented in [architecture.md](file:///c:/Users/tribh/Downloads/EkalShayak/EkalSahayak/architecture.md).
