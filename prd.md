@@ -1,4 +1,4 @@
-# Product Requirements Document (PRD): EkalSahayak (Sunita AI)
+# Product Requirements Document (PRD): EkalSahayak (Lakshya AI)
 
 **Document Version**: 2.0.0  
 **Target Syllabus**: BSE Odisha Board (Class 9 & 10 Science)  
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary & Problem Definition
 
-### 1.1 The Target Persona: Sunita
+### 1.1 The Target Persona: Lakshya
 - **Profile**: 14-year-old Class 9 student in a tribal hamlet in Mayurbhanj / Koraput, Odisha.
 - **Home Language**: Kui / Desia dialect at home; Odia at school.
 - **Hardware Access**: Single entry-level Android smartphone (2GB RAM, 16GB storage, Android 10) shared among 5 family members.
@@ -17,7 +17,7 @@
 - **Connectivity**: Intermittent 2G/3G connectivity; frequent power outages; zero Wi-Fi.
 
 ### 1.2 The Problem Statement
-Existing EdTech products (Byju's, Khan Academy, Unacademy, ChatGPT) fail rural students like Sunita because:
+Existing EdTech products (Byju's, Khan Academy, Unacademy, ChatGPT) fail rural students like Lakshya because:
 1. **Linguistic Mismatch**: Content is delivered in formal English or urban Hindi. When available in Odia, it uses heavy academic jargon (*କଠିନ ଯୁକ୍ତାକ୍ଷର*) that causes cognitive overload on small screens.
 2. **Bandwidth Exclusivity**: 15-minute video lectures consume 200MB+ of high-speed mobile data, exhausting monthly prepaid limits within days.
 3. **Absence of Pedagogical Rigor in Generative AI**: Standard LLMs give long, hallucinated textual answers without verifying if the student understands prerequisites (e.g., explaining *Latent Heat* before verifying *States of Matter*).
@@ -44,7 +44,7 @@ To provide every student in rural and regional India with an autonomous, voice-f
 
 ## 3. User Personas & Scenarios
 
-### Persona 1: Sunita (Primary Learner)
+### Persona 1: Lakshya (Primary Learner)
 - **Need**: Wants to understand why steam from boiling rice burns her hand more painfully than boiling water itself without getting lost in complex textbook formulas.
 - **Behavior**: Taps the voice button, speaks in colloquial Odia, listens to the spoken explanation, reads along with karaoke highlights, and takes a 2-question micro-quiz.
 
