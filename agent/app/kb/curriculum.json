@@ -1,0 +1,416 @@
+{
+  "evaporation": {
+    "concept_id": "evaporation",
+    "topic": "evaporation",
+    "chapter": "BSE Odisha Class 9 · Chapter 1: Matter in Our Surroundings",
+    "title_odia": "ବାଷ୍ପୀଭବନ (Evaporation) ଏବଂ ତାହାର ଶୀତଳୀକରଣ ପ୍ରଭାବ",
+    "title_english": "Evaporation and its Evaporative Cooling Effect",
+    "prerequisites": ["states_of_matter"],
+    "trigger_keywords": [
+      "ବାଷ୍ପୀଭବନ", "ବାଷ୍ପ", "ମାଠିଆ", "ଥଣ୍ଡା", "ଶୁଖିବା", "ପାଣି", "ଓଦା ଲୁଗା", "evaporation", "matka", "pot", "clay pot", "earthen pot", "cool", "cold", "drying", "sweat", "water", "boil", "boiling", "boils"
+    ],
+    "misconceptions": [
+      {
+        "id": "misc_evap_boiling",
+        "text_odia": "ଭାବନ୍ତି ଯେ ପାଣି କେବଳ ୧୦୦°C ରେ ଫୁଟିଲେ ହିଁ ବାଷ୍ପ ହୁଏ (ବାଷ୍ପୀଭବନ ଓ ଫୁଟିବା ମଧ୍ୟରେ ଦ୍ୱନ୍ଦ୍ୱ)",
+        "text_english": "Believes water only turns to vapor at boiling point 100°C (Confusing Evaporation with Boiling)",
+        "trigger_keywords": ["100", "୧୦୦", "ଡିଗ୍ରୀ", "ଫୁଟିବା", "boil", "boiling", "100c", "100 degree"]
+      }
+    ],
+    "analogy_odia": "ଖରାଦିନେ ଗାଁରେ ମାଟି ମାଠିଆର କାନ୍ଥରେ ଥିବା ଛୋଟ ଛୋଟ ଛିଦ୍ର ଦେଇ ପାଣି ବାହାରକୁ ଆସି ବାଷ୍ପୀଭୂତ ହୁଏ । ବାଷ୍ପ ହେବା ପାଇଁ ସେ ମାଠିଆରୁ ଲୀନ ତାପ ଶୋଷିନିଏ, ଫଳରେ ମାଠିଆ ପାଣି ଶୀତଳ ରହେ ।",
+    "analogy_english": "In summer, water seeps through microscopic pores of an earthen pot and evaporates, absorbing latent heat from the remaining water, keeping it cool without ice.",
+    "audio_script_odia": "ସୁନିତା ଶୁଣ! ବାଷ୍ପୀଭବନ ଏବଂ ଫୁଟିବା ମଧ୍ୟରେ ଫରକ ଅଛି । ଫୁଟିବା ପାଇଁ ୧୦୦ ଡିଗ୍ରୀ ଦରକାର, କିନ୍ତୁ ବାଷ୍ପୀଭବନ ଯେକୌଣସି ତାପମାତ୍ରାରେ ଘଟିପାରେ । ମାଟି ମାଠିଆ ପାଣି ଥଣ୍ଡା ରହିବାର କାରଣ ଏହା ହିଁ ଅଟେ ।",
+    "audio_script_english": "Lakshya listen! Evaporation happens at any temperature below the boiling point. It takes heat away to evaporate, which is why water inside a clay pot stays refreshing and cool.",
+    "micro_quiz": [
+      {
+        "id": "q_evap_01",
+        "topic": "evaporation",
+        "difficulty": "medium",
+        "prompt_odia": "ମାଟି ମାଠିଆରେ ପାଣି ରଖିଲେ କାହିଁକି ଥଣ୍ଡା ରହେ?",
+        "prompt_english": "Why does water stay cool inside an earthen clay pot?",
+        "options_odia": [
+          "ମାଠିଆର ଛିଦ୍ର ଦେଇ ଜଳ ବାଷ୍ପୀଭୂତ ହୋଇ ଲୀନ ତାପ ଶୋଷଣ କରେ",
+          "ମାଠିଆ ଭିତରେ ବରଫ ତିଆରି ହୁଏ",
+          "ମାଠିଆ ପାଣିକୁ ୧୦୦°C ରେ ଫୁଟାଇଦିଏ",
+          "ମାଠିଆ ବାହାରୁ ଗରମ ପବନ ଭିତରକୁ ଟାଣିନିଏ"
+        ],
+        "options_english": [
+          "Water evaporates through microscopic pores, absorbing latent heat",
+          "Ice automatically forms inside the pot",
+          "The clay boils water at 100°C",
+          "Clay sucks hot air into the water"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "ମାଟି ମାଠିଆର ଛିଦ୍ର ଦେଇ ପାଣି ଲୀନ ତାପ ଶୋଷଣ କରି ବାଷ୍ପ ହୁଏ, ଯାହା ପାଣିକୁ ଥଣ୍ଡା ରଖେ ।",
+        "explanation_english": "Evaporation through pores absorbs latent heat of vaporization, cooling the liquid."
+      },
+      {
+        "id": "q_evap_02",
+        "topic": "evaporation",
+        "difficulty": "easy",
+        "prompt_odia": "ବାଷ୍ପୀଭବନ କେଉଁ ତାପମାତ୍ରାରେ ଘଟିଥାଏ?",
+        "prompt_english": "At what temperature does evaporation take place?",
+        "options_odia": [
+          "ସ୍ଫୁଟନାଙ୍କ (Boiling point) ତଳେ ଯେକୌଣସି ତାପମାତ୍ରାରେ",
+          "କେବଳ ୧୦୦°C ରେ",
+          "କେବଳ ୦°C ରେ",
+          "କେବଳ ୫୦୦°C ରେ"
+        ],
+        "options_english": [
+          "At any temperature below the boiling point",
+          "Strictly at 100°C",
+          "Strictly at 0°C",
+          "Only at 500°C"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "ବାଷ୍ପୀଭବନ ସ୍ଫୁଟନାଙ୍କ ତଳେ ଯେକୌଣସି ତାପମାତ୍ରାରେ ଘଟିପାରେ ।",
+        "explanation_english": "Evaporation is a surface phenomenon occurring at any temperature below boiling point."
+      }
+    ]
+  },
+  "latent_heat": {
+    "concept_id": "latent_heat",
+    "topic": "latent_heat",
+    "chapter": "BSE Odisha Class 9 · Chapter 1: ଲୀନ ତାପ (Latent Heat)",
+    "title_odia": "ବାଷ୍ପୀଭବନର ଲୀନ ତାପ (Latent Heat of Vaporization)",
+    "title_english": "Latent Heat of Vaporization and State Transition",
+    "prerequisites": ["temperature_and_heat"],
+    "trigger_keywords": [
+      "ଲୀନ ତାପ", "ତାପ", "ହାଣ୍ଡି", "ଭାତ", "ଭାପ", "ବାଷ୍ପ", "ପୋଡ଼ିବା", "latent heat", "steam", "burn", "rice pot"
+    ],
+    "misconceptions": [
+      {
+        "id": "misc_steam_water_temp",
+        "text_odia": "ଭାବନ୍ତି ଯେ ୧୦୦°C ପାଣି ଓ ୧୦୦°C ବାଷ୍ପର ତାପ ଶକ୍ତି ସମାନ",
+        "text_english": "Believes 100°C boiling water and 100°C steam contain the identical amount of thermal energy",
+        "trigger_keywords": ["ସମାନ", "ଗରମ", "same heat", "equal temperature", "equal heat"]
+      }
+    ],
+    "analogy_odia": "ରୋଷେଇ ଘରେ ଫୁଟୁଥିବା ଡାଲି ପାଣି ଠାରୁ ଭାତ ହାଣ୍ଡିରୁ ବାହାରୁଥିବା ବାଷ୍ପ ହାତକୁ ଅଧିକ ଜୋରରେ ପୋଡ଼ିଥାଏ, କାରଣ ବାଷ୍ପରେ ଅତିରିକ୍ତ 'ଲୀନ ତାପ' ଲୁଚି ରହିଥାଏ ।",
+    "analogy_english": "Steam from a boiling rice pot causes much more painful burns than boiling water because steam holds hidden latent heat absorbed during state change.",
+    "audio_script_odia": "ସୁନିତା, ଜାଣିଛ କାହିଁକି ବାଷ୍ପ ଅଧିକ ପୋଡ଼େ? ପାଣି ଯେତେବେଳେ ବାଷ୍ପରେ ପରିଣତ ହୁଏ, ସେ ୨୨.୬ ଲକ୍ଷ ଜୁଲ୍ ଅତିରିକ୍ତ ଲୀନ ତାପ ନିଜ ଭିତରେ ସାଇତି ରଖେ ।",
+    "audio_script_english": "Lakshya, steam burns more severely because each kilogram of steam stores extra latent heat of vaporization that gets released directly onto your skin.",
+    "micro_quiz": [
+      {
+        "id": "q_latent_01",
+        "topic": "latent_heat",
+        "difficulty": "medium",
+        "prompt_odia": "୧୦୦°C ର ଫୁଟୁଥିବା ପାଣି ଅପେକ୍ଷା ୧୦୦°C ର ବାଷ୍ପ କାହିଁକି ଅଧିକ ପୋଡ଼ିଥାଏ?",
+        "prompt_english": "Why does 100°C steam produce more severe burns than 100°C water?",
+        "options_odia": [
+          "ବାଷ୍ପରେ ଅତିରିକ୍ତ ବାଷ୍ପୀଭବନର ଲୀନ ତାପ ସଞ୍ଚିତ ଥାଏ",
+          "ବାଷ୍ପର ତାପମାତ୍ରା ୫୦୦°C ହୋଇଥାଏ",
+          "ବାଷ୍ପରେ ଏସିଡ୍ ଥାଏ",
+          "ବାଷ୍ପ ଅଧିକ ଥଣ୍ଡା ହୋଇଥାଏ"
+        ],
+        "options_english": [
+          "Steam contains extra latent heat of vaporization",
+          "Steam is at 500°C",
+          "Steam contains corrosive acid",
+          "Steam is colder"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "ବାଷ୍ପ ତରଳରୁ ଗ୍ୟାସ୍ ହେବା ବେଳେ ଲୀନ ତାପ ଶୋଷଣ କରିଥାଏ, ଯାହା ସ୍ପର୍ଶରେ ଆସିଲେ ନିର୍ଗତ ହୋଇ ଅଧିକ ଜଳନ ସୃଷ୍ଟି କରେ ।",
+        "explanation_english": "Steam carries latent heat absorbed during phase transition, releasing massive energy on contact."
+      },
+      {
+        "id": "q_latent_02",
+        "topic": "latent_heat",
+        "difficulty": "easy",
+        "prompt_odia": "ଲୀନ ତାପ (Latent heat) ର ମୁଖ୍ୟ କାର୍ଯ୍ୟ କ’ଣ?",
+        "prompt_english": "What is the primary role of latent heat during phase change?",
+        "options_odia": [
+          "ତାପମାତ୍ରା ନ ବଦଳାଇ ପଦାର୍ଥର ଅବସ୍ଥା ପରିବର୍ତ୍ତନ କରିବା",
+          "କେବଳ ତାପମାତ୍ରା ବଢ଼ାଇବା",
+          "ପଦାର୍ଥକୁ ନଷ୍ଟ କରିଦେବା",
+          "ବରଫକୁ କାଠ କରିବା"
+        ],
+        "options_english": [
+          "To change the state of matter without changing temperature",
+          "Only to increase temperature",
+          "To destroy the substance",
+          "To turn ice into wood"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "ଲୀନ ତାପ ତାପମାତ୍ରା ବୃଦ୍ଧି ନ କରି ଅଣୁମାନଙ୍କ ମଧ୍ୟରେ ଥିବା ଆକର୍ଷଣ ବଳକୁ ଭାଙ୍ଗି ଅବସ୍ଥା ବଦଳାଇଥାଏ ।",
+        "explanation_english": "Latent heat overcomes intermolecular attraction during phase transition without temperature change."
+      }
+    ]
+  },
+  "cell_biology": {
+    "concept_id": "cell_biology",
+    "topic": "cell_biology",
+    "chapter": "BSE Odisha Class 9 · Chapter 5: Fundamental Unit of Life",
+    "title_odia": "କୋଷ: ଜୀବନର ମୌଳିକ ଏକକ (Cell Structure)",
+    "title_english": "The Fundamental Unit of Life: Cell Structure and Organelles",
+    "prerequisites": ["living_organisms"],
+    "trigger_keywords": [
+      "କୋଷ", "ଜୀବକୋଷ", "ଉଦ୍ଭିଦ କୋଷ", "ପ୍ରାଣୀ କୋଷ", "କୋଷଜୀବକ", "ନିଉକ୍ଲିୟସ", "cell", "nucleus", "organelle", "membrane", "plant cell", "animal cell"
+    ],
+    "misconceptions": [
+      {
+        "id": "misc_plant_animal_wall",
+        "text_odia": "ଭାବନ୍ତି ଯେ ପ୍ରାଣୀ କୋଷରେ ମଧ୍ୟ କୋଷଭିତ୍ତି (Cell Wall) ଥାଏ",
+        "text_english": "Believes animal cells also have a rigid cell wall like plant cells",
+        "trigger_keywords": ["କୋଷଭିତ୍ତି", "ପ୍ରାଣୀ", "cell wall animal"]
+      }
+    ],
+    "analogy_odia": "ଯେପରି ଇଟା ଯୋଡ଼ି ଗାଁର ସୁନ୍ଦର ଘର ନିର୍ମାଣ ହୁଏ, ସେହିପରି ପ୍ରତ୍ୟେକ ଜୀବ ଶରୀର ଲକ୍ଷ ଲକ୍ଷ କ୍ଷୁଦ୍ର କୋଷ ଦ୍ୱାରା ଗଠିତ । ଉଦ୍ଭିଦ କୋଷର ବାହାରେ ଏକ ଶକ୍ତ କାନ୍ଥ (କୋଷଭିତ୍ତି) ଥାଏ ଯାହା ତାକୁ ଝଡ଼ ବର୍ଷାରେ ସୁରକ୍ଷା ଦିଏ ।",
+    "analogy_english": "Just as bricks assemble to build a sturdy home, cells assemble to build every living body. Plant cells have an outer cell wall acting like a protective boundary against storms.",
+    "audio_script_odia": "ସୁନିତା, ଆମ ଶରୀର ଅସଂଖ୍ୟ କୋଷକୁ ନେଇ ଗଠିତ । କୋଷର କେନ୍ଦ୍ରରେ ଥାଏ ନିଉକ୍ଲିୟସ୍ ଯାହା କୋଷର ମୁଖିଆ ବା କର୍ଣ୍ଣଧାର ଅଟେ ।",
+    "audio_script_english": "Lakshya, cells are life's building blocks. At the center sits the nucleus, functioning like the master village head directing cellular activities.",
+    "micro_quiz": [
+      {
+        "id": "q_cell_01",
+        "topic": "cell_biology",
+        "difficulty": "easy",
+        "prompt_odia": "କେଉଁଟି କେବଳ ଉଦ୍ଭିଦ କୋଷରେ ଥାଏ କିନ୍ତୁ ପ୍ରାଣୀ କୋଷରେ ନଥାଏ?",
+        "prompt_english": "Which cellular component is found in plant cells but absent in animal cells?",
+        "options_odia": [
+          "କୋଷଭିତ୍ତି (Cell Wall) ଏବଂ ହରିତଲବକ (Chloroplast)",
+          "ନିଉକ୍ଲିୟସ (Nucleus)",
+          "କୋଷଜୀବକ (Cytoplasm)",
+          "କୋଷଝିଲ୍ଲୀ (Cell Membrane)"
+        ],
+        "options_english": [
+          "Cell Wall and Chloroplast",
+          "Nucleus",
+          "Cytoplasm",
+          "Cell Membrane"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "କୋଷଭିତ୍ତି ଓ କ୍ଲୋରୋପ୍ଲାଷ୍ଟ କେବଳ ଉଦ୍ଭିଦ କୋଷରେ ଥାଏ ।",
+        "explanation_english": "Cell walls and chloroplasts are unique to plant cells for rigidity and photosynthesis."
+      },
+      {
+        "id": "q_cell_02",
+        "topic": "cell_biology",
+        "difficulty": "medium",
+        "prompt_odia": "କୋଷର ସମସ୍ତ କାର୍ଯ୍ୟ କିଏ ନିୟନ୍ତ୍ରଣ କରେ?",
+        "prompt_english": "Which organelle acts as the control center of the cell?",
+        "options_odia": [
+          "ନିଉକ୍ଲିୟସ (Nucleus)",
+          "ରସଧାନୀ (Vacuole)",
+          "କୋଷଭିତ୍ତି (Cell Wall)",
+          "ଜଳ (Water)"
+        ],
+        "options_english": [
+          "Nucleus",
+          "Vacuole",
+          "Cell Wall",
+          "Water"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "ନିଉକ୍ଲିୟସ୍ କୋଷର ମସ୍ତିଷ୍କ ଭଳି ସମସ୍ତ ଜୈବିକ ପ୍ରକ୍ରିୟା ନିୟନ୍ତ୍ରଣ କରେ ।",
+        "explanation_english": "The nucleus houses genetic DNA and commands all metabolic and reproductive functions."
+      }
+    ]
+  },
+  "mitochondria": {
+    "concept_id": "mitochondria",
+    "topic": "mitochondria",
+    "chapter": "BSE Odisha Class 9 · Chapter 5: Fundamental Unit of Life",
+    "title_odia": "ମାଇଟୋକଣ୍ଡ୍ରିଆ: କୋଷର ଶକ୍ତି କେନ୍ଦ୍ର (Powerhouse of Cell)",
+    "title_english": "Mitochondria and ATP Cellular Energy Generation",
+    "prerequisites": ["cell_biology"],
+    "trigger_keywords": [
+      "ମାଇଟୋକଣ୍ଡ୍ରିଆ", "ଶକ୍ତି କେନ୍ଦ୍ର", "atp", "ଶକ୍ତି", "powerhouse", "powerhouse of the cell", "powerhouse of cell", "mitochondria", "cellular energy"
+    ],
+    "misconceptions": [
+      {
+        "id": "misc_atp_source",
+        "text_odia": "ଭାବନ୍ତି ଯେ ଖାଦ୍ୟ ଖାଇବା ମାତ୍ରେ ସିଧା ଶକ୍ତି ମିଳିଯାଏ, କୋଷୀୟ ଶ୍ୱସନ ଦରକାର ନାହିଁ",
+        "text_english": "Believes digestion alone generates movement energy without mitochondrial respiration producing ATP",
+        "trigger_keywords": ["ସିଧା ଶକ୍ତି", "direct energy", "no respiration"]
+      }
+    ],
+    "analogy_odia": "ଯେପରି ଗାଁର ଧାନ କଳ ଚାଲିବା ପାଇଁ ଡିଜେଲ ଇଞ୍ଜିନ ଶକ୍ତି ତିଆରି କରେ, ସେହିପରି ମାଇଟୋକଣ୍ଡ୍ରିଆ କୋଷ ଭିତରେ ଖାଦ୍ୟରୁ ATP ନାମକ ଶକ୍ତି ମୁଦ୍ରା ପ୍ରସ୍ତୁତ କରେ । ତେଣୁ ଏହାକୁ କୋଷର 'ଶକ୍ତି କେନ୍ଦ୍ର' କୁହାଯାଏ ।",
+    "analogy_english": "Just as a village rice mill diesel generator produces electricity to grind paddy, mitochondria combust glucose into ATP energy currency.",
+    "audio_script_odia": "ସୁନିତା, ମାଇଟୋକଣ୍ଡ୍ରିଆକୁ କୋଷର ପାୱାରହାଉସ୍ କୁହାଯାଏ । ଏହା ATP ଆକାରରେ ଶକ୍ତି ସାଇତି ରଖେ ଯାହା ଦ୍ୱାରା ତୁମେ ଦୌଡ଼ିବା, ପଢ଼ିବା ଓ ଖେଳିବା ପାଇଁ ଶକ୍ତି ପାଅ ।",
+    "audio_script_english": "Lakshya, mitochondria are cells' powerhouses producing ATP molecules that fuel your muscles when running and brain when studying.",
+    "micro_quiz": [
+      {
+        "id": "q_mito_01",
+        "topic": "mitochondria",
+        "difficulty": "easy",
+        "prompt_odia": "କୋଷର ଶକ୍ତି କେନ୍ଦ୍ର (Powerhouse of the Cell) କାହାକୁ କୁହାଯାଏ?",
+        "prompt_english": "Which organelle is universally designated as the Powerhouse of the Cell?",
+        "options_odia": [
+          "ମାଇଟୋକଣ୍ଡ୍ରିଆ (Mitochondria)",
+          "ରାଇବୋଜୋମ୍ (Ribosome)",
+          "ଲାଇସୋଜୋମ୍ (Lysosome)",
+          "ଗଲଗିପିଣ୍ଡ (Golgi Apparatus)"
+        ],
+        "options_english": [
+          "Mitochondria",
+          "Ribosome",
+          "Lysosome",
+          "Golgi Body"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "ମାଇଟୋକଣ୍ଡ୍ରିଆ କୋଷୀୟ ଶ୍ୱସନ ଦ୍ୱାରା ATP ଶକ୍ତି ଉତ୍ପାଦନ କରୁଥିବାରୁ ଏହାକୁ ଶକ୍ତି କେନ୍ଦ୍ର କୁହାଯାଏ ।",
+        "explanation_english": "Mitochondria produce cellular ATP through oxidative phosphorylation."
+      },
+      {
+        "id": "q_mito_02",
+        "topic": "mitochondria",
+        "difficulty": "medium",
+        "prompt_odia": "କୋଷର ଶକ୍ତି ମୁଦ୍ରା (Energy Currency) କାହାକୁ କୁହାଯାଏ?",
+        "prompt_english": "What molecule is recognized as the Energy Currency of the cell?",
+        "options_odia": [
+          "ATP (Adenosine Triphosphate)",
+          "DNA",
+          "RNA",
+          "ଗ୍ଲୁକୋଜ୍ (Glucose)"
+        ],
+        "options_english": [
+          "ATP (Adenosine Triphosphate)",
+          "DNA",
+          "RNA",
+          "Glucose"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "ATP ମଧ୍ୟରେ ରାସାୟନିକ ଶକ୍ତି ସଞ୍ଚିତ ଥାଏ ଯାହା ଜୈବିକ କାର୍ଯ୍ୟରେ ବ୍ୟବହୃତ ହୁଏ ।",
+        "explanation_english": "ATP directly fuels enzymatic cellular reactions and mechanical work."
+      }
+    ]
+  },
+  "motion": {
+    "concept_id": "motion",
+    "topic": "motion",
+    "chapter": "BSE Odisha Class 9 · Chapter 8: ଗତି (Motion)",
+    "title_odia": "ଗତି: ଦୂରତା (Distance) ଏବଂ ବିସ୍ଥାପନ (Displacement)",
+    "title_english": "Motion: Distance, Displacement, Speed and Velocity",
+    "prerequisites": ["reference_point"],
+    "trigger_keywords": [
+      "ଗତି", "ଦୂରତା", "ବିସ୍ଥାପନ", "ବେଗ", "ତ୍ୱରଣ", "motion", "distance", "displacement", "speed", "velocity", "acceleration"
+    ],
+    "misconceptions": [
+      {
+        "id": "misc_displacement_distance",
+        "text_odia": "ଭାବନ୍ତି ଯେ ଦୂରତା ଏବଂ ବିସ୍ଥାପନ ସବୁବେଳେ ସମାନ, ଘରକୁ ଫେରିଲେ ମଧ୍ୟ ବିସ୍ଥାପନ ଶୂନ୍ୟ ହୁଏନାହିଁ ବୋଲି ଭାବନ୍ତି",
+        "text_english": "Believes distance and displacement are identical, and that returning home cannot result in zero displacement",
+        "trigger_keywords": ["ବିସ୍ଥାପନ ଶୂନ୍ୟ", "ସମାନ ଦୂରତା", "displacement zero", "distance same"]
+      }
+    ],
+    "analogy_odia": "ସୁନିତା ସକାଳେ ଘରୁ ବାହାରି ୨ କିଲୋମିଟର ଚାଲି ବିଦ୍ୟାଳୟକୁ ଗଲା ଏବଂ ସନ୍ଧ୍ୟାରେ ପୁଣି ଘରକୁ ଫେରିଲା । ଏଠାରେ ସେ ମୋଟ ୪ କିଲୋମିଟର 'ଦୂରତା' ଅତିକ୍ରମ କଲା, କିନ୍ତୁ ପ୍ରାରମ୍ଭିକ ଓ ଶେଷ ସ୍ଥାନ ସମାନ ଥିବାରୁ ତାହାର 'ବିସ୍ଥାପନ' ଶୂନ୍ୟ ହେଲା ।",
+    "analogy_english": "If you walk 2 km from your house to school and return home in the evening, your total distance traveled is 4 km, but your net displacement is exactly zero because your start and end positions match.",
+    "audio_script_odia": "ସୁନିତା, ମନେରଖ! ଦୂରତା ହେଉଛି ତୁମେ ଚାଲିଥିବା ସମ୍ପୂର୍ଣ୍ଣ ବାଟ । କିନ୍ତୁ ବିସ୍ଥାପନ ହେଉଛି ଆରମ୍ଭ ସ୍ଥାନରୁ ଶେଷ ସ୍ଥାନ ମଧ୍ୟରେ ସିଧା ସଳଖ ସର୍ବନିମ୍ନ ଦୂରତା । ତେଣୁ ଘରକୁ ଫେରିଲେ ବିସ୍ଥାପନ ଶୂନ୍ୟ ହୁଏ ।",
+    "audio_script_english": "Lakshya, remember: distance is the total ground covered. Displacement is the straight-line vector from starting point to end point. Returning to your starting spot means zero displacement.",
+    "micro_quiz": [
+      {
+        "id": "q_motion_01",
+        "topic": "motion",
+        "difficulty": "medium",
+        "prompt_odia": "ଜଣେ ବ୍ୟକ୍ତି ଗୋଲାକାର ପଡ଼ିଆରେ ଗୋଟିଏ ସମ୍ପୂର୍ଣ୍ଣ ଘେରା ବୁଲି ଆସିଲେ ତାଙ୍କର ବିସ୍ଥାପନ (Displacement) କେତେ ହେବ?",
+        "prompt_english": "An athlete completes one round of a circular track. What is their net displacement?",
+        "options_odia": [
+          "ଶୂନ୍ୟ (Zero)",
+          "ପଡ଼ିଆର ପରିଧି (Circumference)",
+          "ପଡ଼ିଆର ବ୍ୟାସ (Diameter)",
+          "ଅନନ୍ତ (Infinite)"
+        ],
+        "options_english": [
+          "Zero",
+          "Equal to circumference",
+          "Equal to diameter",
+          "Infinite"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "ପ୍ରାରମ୍ଭିକ ଓ ଅନ୍ତିମ ବିନ୍ଦୁ ଏକା ହୋଇଥିବାରୁ ସର୍ବନିମ୍ନ ଦୂରତା ବା ବିସ୍ଥାପନ ଶୂନ୍ୟ ହୁଏ ।",
+        "explanation_english": "Initial and final positions coincide, rendering vector displacement precisely zero."
+      },
+      {
+        "id": "q_motion_02",
+        "topic": "motion",
+        "difficulty": "easy",
+        "prompt_odia": "କେଉଁଟି ଏକ ସଦିଶ ରାଶି (Vector Quantity)?",
+        "prompt_english": "Which of the following is a Vector quantity?",
+        "options_odia": [
+          "ବିସ୍ଥାପନ (Displacement)",
+          "ଦୂରତା (Distance)",
+          "ସମୟ (Time)",
+          "ବସ୍ତୁତ୍ୱ (Mass)"
+        ],
+        "options_english": [
+          "Displacement",
+          "Distance",
+          "Time",
+          "Mass"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "ବିସ୍ଥାପନର ଉଭୟ ମାନ ଓ ଦିଗ ଥାଏ, ତେଣୁ ଏହା ଏକ ସଦିଶ ରାଶି ।",
+        "explanation_english": "Displacement possesses both magnitude and spatial direction, classifying it as a vector."
+      }
+    ]
+  },
+  "force": {
+    "concept_id": "force",
+    "topic": "force",
+    "chapter": "BSE Odisha Class 9 · Chapter 9: ବଳ ଏବଂ ଗତି ନିୟମ (Force & Laws of Motion)",
+    "title_odia": "ବଳ ଏବଂ ନିଉଟନଙ୍କ ଗତି ନିୟମ (Inertia & Newton's Laws)",
+    "title_english": "Force and Newton's Laws of Motion: Inertia and Momentum",
+    "prerequisites": ["motion"],
+    "trigger_keywords": [
+      "ବଳ", "ନିଉଟନ", "ଜଡ଼ତା", "ସଂବେଗ", "ବସ୍", "ବସ୍ରେ", "ବ୍ରେକ୍", "ଝୁଙ୍କି", "ଝୁଙ୍କିପଡ଼ିବା", "force", "frictional force", "friction", "inertia", "momentum", "laws of motion", "bus", "brake"
+    ],
+    "misconceptions": [
+      {
+        "id": "misc_force_continuous_motion",
+        "text_odia": "ଭାବନ୍ତି ଯେ ବସ୍ତୁକୁ ଗତିଶୀଳ ରଖିବା ପାଇଁ ସବୁବେଳେ ବଳ ପ୍ରୟୋଗ କରିବା ଦରକାର (ଆରିଷ୍ଟୋଟଲଙ୍କ ଭ୍ରାନ୍ତ ଧାରଣା)",
+        "text_english": "Believes a continuous external force is required just to keep an object moving at constant speed",
+        "trigger_keywords": ["ବଳ ଦରକାର", "ନିରନ୍ତର ବଳ", "continuous force", "need force to move"]
+      }
+    ],
+    "analogy_odia": "ଯେତେବେଳେ ତୁମେ ଗାଁ ବସରେ ଯାତ୍ରା କରୁଥାଅ, ଡ୍ରାଇଭର ହଠାତ୍ ବ୍ରେକ୍ ମାରିଲେ ତୁମ ଶରୀର ଆଗକୁ ଝୁଙ୍କିପଡ଼େ । ଏହାକୁ ଗତିର 'ଜଡ଼ତା' (Inertia) କୁହାଯାଏ । ନିଉଟନଙ୍କ ପ୍ରଥମ ନିୟମ ଅନୁସାରେ ବାହାରୁ ବଳ ନପଡ଼ିବା ଯାଏଁ ଶରୀର ଗତିରେ ରହିବାକୁ ଚେଷ୍ଟା କରେ ।",
+    "analogy_english": "When a village bus driver suddenly slams the brakes, your torso lurches forward. This is Inertia of motion — as Newton's First Law states, bodies persist in motion unless acted upon by an external unbalanced force.",
+    "audio_script_odia": "ସୁନିତା, ନିଉଟନଙ୍କ ପ୍ରଥମ ନିୟମ ମନେରଖ! କୌଣସି ବାହ୍ୟ ବଳ ପ୍ରୟୋଗ ନହେବା ପର୍ଯ୍ୟନ୍ତ ସ୍ଥିର ବସ୍ତୁ ସ୍ଥିର ରହେ ଏବଂ ଗତିଶୀଳ ବସ୍ତୁ ସରଳ ରେଖାରେ ଗତି କରୁଥାଏ । ଏହି ଗୁଣକୁ ଜଡ଼ତା କୁହାଯାଏ ।",
+    "audio_script_english": "Lakshya, Newton's first law explains inertia: an object remains at rest or in uniform straight motion unless compelled to change by an external net force.",
+    "micro_quiz": [
+      {
+        "id": "q_force_01",
+        "topic": "force",
+        "difficulty": "medium",
+        "prompt_odia": "ହଠାତ୍ ବସ୍ ଅଟକିଗଲେ ଯାତ୍ରୀ ଆଗକୁ ଝୁଙ୍କିପଡ଼ିବାର କାରଣ କ’ଣ?",
+        "prompt_english": "Why do passengers lurch forward when a moving bus abruptly halts?",
+        "options_odia": [
+          "ଗତିର ଜଡ଼ତା (Inertia of Motion)",
+          "ସ୍ଥିତିର ଜଡ଼ତା (Inertia of Rest)",
+          "ମାଧ୍ୟାକର୍ଷଣ ବଳ (Gravity)",
+          "ବାୟୁର ଚାପ (Air Pressure)"
+        ],
+        "options_english": [
+          "Inertia of Motion",
+          "Inertia of Rest",
+          "Gravitational Force",
+          "Atmospheric Pressure"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "ଯାତ୍ରୀଙ୍କ ଉପର ଶରୀର ଗତିଶୀଳ ଅବସ୍ଥା ବଜାୟ ରଖିବାକୁ ଚେଷ୍ଟା କରୁଥିବାରୁ ଆଗକୁ ଝୁଙ୍କିପଡ଼େ ।",
+        "explanation_english": "The upper body tends to preserve its state of uniform motion due to inertia."
+      },
+      {
+        "id": "q_force_02",
+        "topic": "force",
+        "difficulty": "easy",
+        "prompt_odia": "ନିଉଟନଙ୍କ ଦ୍ୱିତୀୟ ଗତି ନିୟମରୁ ବଳ (F) ର ସୂତ୍ର କ’ଣ ମିଳେ?",
+        "prompt_english": "What is the mathematical equation for Force derived from Newton's Second Law?",
+        "options_odia": [
+          "F = m × a (ବସ୍ତୁତ୍ୱ × ତ୍ୱରଣ)",
+          "F = m / a",
+          "F = m + a",
+          "F = v / t"
+        ],
+        "options_english": [
+          "F = m * a (Mass * Acceleration)",
+          "F = m / a",
+          "F = m + a",
+          "F = v / t"
+        ],
+        "correct_index": 0,
+        "explanation_odia": "ନିଉଟନଙ୍କ ଦ୍ୱିତୀୟ ନିୟମ ଅନୁସାରେ ବଳ ହେଉଛି ବସ୍ତୁତ୍ୱ ଏବଂ ତ୍ୱରଣର ଗୁଣଫଳ (F = ma) ।",
+        "explanation_english": "Force equals the product of mass and acceleration according to Newton's Second Law."
+      }
+    ]
+  }
+}
