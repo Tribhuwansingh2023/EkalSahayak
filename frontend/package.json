@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "pnpm --filter @workspace/sunita-ai run dev",
+    "frontend": "pnpm --filter @workspace/sunita-ai run dev",
     "dev:frontend": "pnpm --filter @workspace/sunita-ai run dev",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
