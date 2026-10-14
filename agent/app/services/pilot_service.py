@@ -150,7 +150,7 @@ class PilotService:
         for a in answers:
             qid = a.get("question_id")
             idx = a.get("selected_index", -1)
-            q = q_map.get(qid)
+            q = q_map.get(qid) if qid is not None else None
             if q:
                 is_correct = idx == q["correct_index"]
                 if is_correct:
