@@ -1,4 +1,4 @@
-# EkalSahayak (Sunita AI) - Executive Pitch & Investment Deck
+# EkalSahayak (Lakshya AI) - Executive Pitch & Investment Deck
 
 **Tagline**: *Zero-Data, Voice-First Vernacular AI Tutor for the Next 40 Million Rural Learners.*  
 **Primary Focus**: BSE Odisha State Board Curriculum (Class 9 & 10 Science)  
@@ -9,23 +9,23 @@
 
 > "40 million high school students in rural India are forced to study science through English or formal textbook jargon on cracked, shared smartphones with 45 minutes of daily access. Video apps consume their family's entire monthly data pack in 2 days, while ChatGPT hallucinates without understanding pedagogy. 
 > 
-> **EkalSahayak (Sunita AI)** is an offline-first, voice-first personal science tutor in authentic Odia. It operates with **zero data consumption** using local edge graphs, grounds physics and biology in rural village context (*ମାଟି ମାଠିଆ*, *ଭାତ ହାଣ୍ଡି*), and uses a deterministic LangGraph state machine that mathematically prevents hallucinations. We cut the bandwidth cost of digital education by 99.9%."
+> **EkalSahayak (Lakshya AI)** is an offline-first, voice-first personal science tutor in authentic Odia. It operates with **zero data consumption** using local edge graphs, grounds physics and biology in rural village context (*ମାଟି ମାଠିଆ*, *ଭାତ ହାଣ୍ଡି*), and uses a deterministic LangGraph state machine that mathematically prevents hallucinations. We cut the bandwidth cost of digital education by 99.9%."
 
 ---
 
 ## 2. The 3-Minute Competition Pitch Script
 
 ### Minute 1: The Reality of Rural High School Education
-"Judges, picture this: It is 7:30 PM in a small village in Koraput, Odisha. A 14-year-old girl named Sunita finally gets her father’s mobile phone. She has 45 minutes to study Class 9 science before the battery dies or her father needs the phone back.
+"Judges, picture this: It is 7:30 PM in a small village in Koraput, Odisha. A 14-year-old girl named Lakshya finally gets her father’s mobile phone. She has 45 minutes to study Class 9 science before the battery dies or her father needs the phone back.
 
 She has a burning question from class: *'Why does water in an earthen pot stay cool? Does it boil at 100°C?'*
 
 What happens when she searches online?
 - **YouTube / Byju's**: Streams a 200MB video lecture. After two videos, her father's 1GB daily mobile data is gone. The family has no internet for the rest of the day.
-- **ChatGPT**: Dumps three English paragraphs about 'thermodynamics and vapor pressure.' Sunita cannot read scientific English and closes the app in frustration.
+- **ChatGPT**: Dumps three English paragraphs about 'thermodynamics and vapor pressure.' Lakshya cannot read scientific English and closes the app in frustration.
 - **Classroom**: Her school has 60 students and 1 science teacher. She is too shy to ask.
 
-This is not just Sunita’s story. This is the reality of **40 million rural secondary students across India**."
+This is not just Lakshya’s story. This is the reality of **40 million rural secondary students across India**."
 
 ---
 
@@ -33,13 +33,13 @@ This is not just Sunita’s story. This is the reality of **40 million rural sec
 "We built **EkalSahayak** to solve this exact triad: **Language, Bandwidth, and Pedagogy**.
 
 1. **Voice-First in Authentic Odia**:
-   Browsers don’t have native Odia voices. We built a phonetic transliteration engine that converts Odia Unicode to Indic Devanagari phonemes, delivering authentic spoken Odia with synchronized sentence-by-sentence karaoke highlighting. Sunita listens and reads along without screen fatigue.
+   Browsers don’t have native Odia voices. We built a phonetic transliteration engine that converts Odia Unicode to Indic Devanagari phonemes, delivering authentic spoken Odia with synchronized sentence-by-sentence karaoke highlighting. Lakshya listens and reads along without screen fatigue.
 
 2. **Deterministic Pedagogical Brain (Zero Hallucination)**:
-   We don’t let an LLM run wild. Using **LangGraph**, every query traverses a bounded 5-node pedagogical state machine. When Sunita asks about the earthen pot, the agent *first* checks if she understands *States of Matter*. It detects her misconception that boiling is required for evaporation, scaffolds *Latent Heat*, and grounds the explanation in her lived reality — the village earthen pot (*ମାଟି ମାଠିଆ*) and rice cooking pot (*ଭାତ ହାଣ୍ଡି*).
+   We don’t let an LLM run wild. Using **LangGraph**, every query traverses a bounded 5-node pedagogical state machine. When Lakshya asks about the earthen pot, the agent *first* checks if she understands *States of Matter*. It detects her misconception that boiling is required for evaporation, scaffolds *Latent Heat*, and grounds the explanation in her lived reality — the village earthen pot (*ମାଟି ମାଠିଆ*) and rice cooking pot (*ଭାତ ହାଣ୍ଡି*).
 
 3. **100% Zero-Data Offline Operation**:
-   The entire BSE Odisha Class 9 science curriculum payload is **under 80 KB** — smaller than a single low-res photo! It caches inside `IndexedDB`. When Sunita has zero internet in her village, our client-side Edge Agent executes the LangGraph workflow directly in browser memory. When connectivity returns, her mastery scores and quiz attempts auto-sync."
+   The entire BSE Odisha Class 9 science curriculum payload is **under 80 KB** — smaller than a single low-res photo! It caches inside `IndexedDB`. When Lakshya has zero internet in her village, our client-side Edge Agent executes the LangGraph workflow directly in browser memory. When connectivity returns, her mastery scores and quiz attempts auto-sync."
 
 ---
 
@@ -90,7 +90,7 @@ That is **EkalSahayak**. Thank you!"
 
 ## 4. Competitive Differentiation Matrix
 
-| Dimension | Standard EdTech (Byju's, Unacademy) | General LLM Chatbots (ChatGPT, Gemini) | **EkalSahayak (Sunita AI)** |
+| Dimension | Standard EdTech (Byju's, Unacademy) | General LLM Chatbots (ChatGPT, Gemini) | **EkalSahayak (Lakshya AI)** |
 | :--- | :--- | :--- | :--- |
 | **Language Medium** | English / Urban Hindi | English (broken regional translation) | **Authentic Spoken Odia with Cultural Anchors** |
 | **Delivery Medium** | Heavy Video (200MB+) | Text-heavy chat | **Voice-First + Karaoke Read-Along** |
