@@ -1,5 +1,5 @@
 # =====================================================================
-# EkalSahayak (Sunita AI) - Git Ignore Configuration
+# EkalSahayak (Lakshya AI) - Git Ignore Configuration
 # =====================================================================
 
 # Environment variables & secrets
@@ -66,3 +66,34 @@ Desktop.ini
 *.sqlite
 *.sqlite3
 *.db
+
+# Datasets & Large Documents (Do NOT upload to GitHub)
+dataset/
+**/dataset/
+*.pdf
+
+# Screenshots, Images & Media (Do NOT upload to GitHub)
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.bmp
+*.tiff
+screenshots/
+**/screenshots/
+**/i18n-screens/
+media/
+**/media/
+*.mp4
+*.webm
+*.mov
+*.mkv
+
+# Scratch Scripts, Local Models & Test Artifacts
+scratch/
+**/scratch/
+.coverage
+htmlcov/
+*.pkl
+*.pickle
