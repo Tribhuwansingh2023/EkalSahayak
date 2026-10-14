@@ -87,6 +87,8 @@ generated/
 # Datasets, Models & Large Binaries
 dataset/
 **/dataset/
+agent/app/data/
+**/agent/app/data/
 *.pdf
 *.pkl
 *.pickle

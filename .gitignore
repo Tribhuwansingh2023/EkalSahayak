@@ -71,6 +71,8 @@ Desktop.ini
 dataset/
 **/dataset/
 *.pdf
+agent/app/data/
+**/agent/app/data/
 
 # Screenshots, Images & Media (Do NOT upload to GitHub)
 *.png
