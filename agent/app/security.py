@@ -184,6 +184,19 @@ async def get_current_user(
     return user
 
 
+async def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security_bearer),
+    settings: Settings = Depends(get_settings),
+) -> dict[str, Any] | None:
+    """Dependency: Optionally extracts and validates token if provided, returning None otherwise."""
+    if credentials is None or not credentials.credentials:
+        return None
+    try:
+        return await get_current_user(credentials=credentials, settings=settings)
+    except HTTPException:
+        return None
+
+
 def require_role(*allowed_roles: UserRole):
     """Dependency factory: Ensures current user has one of the required roles."""
 

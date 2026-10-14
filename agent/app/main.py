@@ -35,6 +35,7 @@ from app.routers import (
     auth_router,
     health_router,
     kb_router,
+    multiagent_router,
     pilot_router,
     quiz_router,
     study_router,
@@ -247,6 +248,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(agent_router)
     app.include_router(kb_router)
+    app.include_router(multiagent_router)
     app.include_router(quiz_router)
     app.include_router(study_router)
     app.include_router(teacher_router)
