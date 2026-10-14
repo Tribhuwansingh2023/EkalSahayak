@@ -67,11 +67,14 @@ class InteractRequest(BaseModel):
 class AgentTraceItem(BaseModel):
     step_name: str
     node: str
+    agent: str | None = None
     tool_called: str
     tool_args: dict[str, Any]
     tool_output: Any
     pedagogical_intent: str
     duration_ms: float | None = None
+    critic_verdict: str | None = None
+    retrieved_chunk_ids: list[str] | None = None
 
 
 class InteractResponse(BaseModel):

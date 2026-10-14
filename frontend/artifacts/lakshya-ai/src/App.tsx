@@ -45,6 +45,7 @@ import { PracticePage } from './pages/PracticePage';
 import { QuestionsPage } from './pages/QuestionsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TeacherPage } from './pages/TeacherPage';
+import { JudgeModePage } from './pages/JudgeModePage';
 
 const initial: AppData = {
   learners: [
@@ -84,8 +85,9 @@ const navItems = [
   { href: '/plan', key: 'nav.studyPlan', defaultLabel: 'Study Plan', icon: ListChecks },
   { href: '/practice', key: 'nav.practice', defaultLabel: 'Practice', icon: Target },
   { href: '/inbox', key: 'nav.questions', defaultLabel: 'Questions', icon: AudioLines },
-  { href: '/settings', key: 'nav.settings', defaultLabel: 'Settings', icon: Settings },
   { href: '/teacher', key: 'nav.teacherView', defaultLabel: 'Teacher', icon: Users },
+  { href: '/judge', key: 'nav.judgeMode', defaultLabel: 'Judge Mode', icon: ShieldCheck },
+  { href: '/settings', key: 'nav.settings', defaultLabel: 'Settings', icon: Settings },
 ];
 
 const dbKey = 'ekalsahayak-local-v1';
@@ -502,7 +504,7 @@ function App() {
                     const l = LANGUAGES[code];
                     return (
                       <option key={code} value={code}>
-                        {l.nativeName} · {l.englishName} {l.tier === 'B' ? '(Beta)' : ''}
+                        {l.nativeName} {l.tier === 'B' ? '(Beta)' : ''}
                       </option>
                     );
                   })}
@@ -522,8 +524,8 @@ function App() {
                 />
                 {data.onlineMode === 'offline' ? t('common.offline') : t('common.online')}
                 {offlineQueueCount > 0 && (
-                  <span className="trace-pill" style={{ background: '#f59e0b', color: '#fff' }}>
-                    {offlineQueueCount}
+                  <span className="trace-pill" style={{ background: '#f59e0b', color: '#fff' }} title={`${offlineQueueCount} offline doubts queued to sync`}>
+                    {offlineQueueCount} queued
                   </span>
                 )}
               </button>
@@ -619,6 +621,9 @@ function App() {
               </Route>
               <Route path="/teacher">
                 <TeacherPage data={data} setNotice={setNotice} />
+              </Route>
+              <Route path="/judge">
+                <JudgeModePage />
               </Route>
               <Route>
                 <HomePage

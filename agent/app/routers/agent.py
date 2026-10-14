@@ -85,11 +85,14 @@ async def interact(
             AgentTraceItem(
                 step_name=t.get("step_name", ""),
                 node=t.get("node", ""),
+                agent=t.get("agent", "Orchestrator"),
                 tool_called=t.get("tool_called", ""),
                 tool_args=t.get("tool_args", {}),
                 tool_output=t.get("tool_output"),
                 pedagogical_intent=t.get("pedagogical_intent", ""),
                 duration_ms=t.get("duration_ms"),
+                critic_verdict=t.get("critic_verdict"),
+                retrieved_chunk_ids=t.get("retrieved_chunk_ids"),
             )
         )
 

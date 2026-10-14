@@ -42,6 +42,7 @@ build/
 .output/
 out/
 coverage/
+*.tsbuildinfo
 
 # Logs and debug traces
 *.log

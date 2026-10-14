@@ -29,13 +29,17 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import Settings, get_settings
 from app.db import connect_db, disconnect_db, get_database
+from app.rag.curriculum_builder import get_all_concepts
 from app.routers import (
     agent_router,
     auth_router,
     health_router,
     kb_router,
+    pilot_router,
     quiz_router,
+    study_router,
     sync_router,
+    teacher_router,
     voice_router,
     ws_quiz_router,
 )
@@ -64,6 +68,12 @@ async def seed_demo_data_if_enabled(settings: Settings) -> None:
     for q in questions:
         await db.questions.update_one({"id": q["id"]}, {"$set": q}, upsert=True)
     logger.info("Ingested %d questions from curriculum KB into MongoDB.", len(questions))
+
+    # 2. Ingest NCERT Class 9 Curriculum Concepts
+    concepts = get_all_concepts()
+    for c in concepts:
+        await db.curriculum.update_one({"concept_id": c.concept_id}, {"$set": c.to_dict()}, upsert=True)
+    logger.info("Ingested %d NCERT curriculum concept nodes into MongoDB.", len(concepts))
 
     # 2. Seed Demo User in Dev if requested
     if settings.ENV == "dev" and settings.SEED_DEMO:
@@ -238,6 +248,9 @@ def create_app() -> FastAPI:
     app.include_router(agent_router)
     app.include_router(kb_router)
     app.include_router(quiz_router)
+    app.include_router(study_router)
+    app.include_router(teacher_router)
+    app.include_router(pilot_router)
     app.include_router(voice_router)
     app.include_router(sync_router)
     app.include_router(ws_quiz_router)
