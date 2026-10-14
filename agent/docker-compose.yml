@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: ekalsahayak_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ekalsahayak
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'db.runCommand(\"ping\").ok' | mongosh localhost:27017/ekalsahayak --quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - ekal_network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ekalsahayak_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=dev
+      - PORT=8000
+      - MONGO_URI=mongodb://mongo:27017
+      - DB_NAME=ekalsahayak
+      - JWT_SECRET_KEY=change_this_to_a_minimum_32_char_cryptographic_random_secret_string
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+      - SEED_DEMO=true
+      - TTS_CACHE_DIR=/app/audio_cache
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      - audio_cache:/app/audio_cache
+    networks:
+      - ekal_network
+
+volumes:
+  mongo_data:
+    driver: local
+  audio_cache:
+    driver: local
+
+networks:
+  ekal_network:
+    driver: bridge
