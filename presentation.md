@@ -1,4 +1,4 @@
-# EkalSahayak (Sunita AI) - Presentation Deck & Demo Talk Track
+# EkalSahayak (Lakshya AI) - Presentation Deck & Demo Talk Track
 
 **Theme**: Deterministic Pedagogical AI for Regional & Rural India  
 **Target Audience**: Hackathon Judges, EdTech Evaluators, Government Education Officials, Investors  
@@ -9,14 +9,14 @@
 ## Slide 1: Title & The Mission Hook
 
 ### Visual Layout
-- Hero typography: **EkalSahayak (ଏକଲ ସହାୟକ) · Powered by Sunita AI**
+- Hero typography: **EkalSahayak (ଏକଲ ସହାୟକ) · Powered by Lakshya AI**
 - Subtitle: *Bridging the Vernacular, Bandwidth, and Pedagogical Divide for 40 Million Rural Learners.*
 - Visual: Split image — on the left, a low-cost smartphone on a village veranda; on the right, the glowing LangGraph decision tree.
 
 ### Speaker Talk Track (0:00 - 0:45)
-> "Good afternoon judges. Meet Sunita. She is 14 years old, studying in Class 9 in a tribal village in Mayurbhanj, Odisha. Her family shares a single low-cost Android phone, and she gets to use it for exactly 45 minutes a day when her parents return from work. 
+> "Good afternoon judges. Meet Lakshya. She is 14 years old, studying in Class 9 in a tribal village in Mayurbhanj, Odisha. Her family shares a single low-cost Android phone, and she gets to use it for exactly 45 minutes a day when her parents return from work. 
 > 
-> When Sunita opens standard EdTech apps or ChatGPT, three things break:
+> When Lakshya opens standard EdTech apps or ChatGPT, three things break:
 > 1. The app asks her to read dense English or formal textbook Odia on a cracked 5-inch screen.
 > 2. Video lectures consume her family's entire monthly 1GB data pack in two days.
 > 3. Standard AI chatbots hallucinate and give long textbook dumps without checking if she understands foundational concepts.
@@ -75,13 +75,13 @@
 - **Action**: Tap on the instant doubt pill:
   🍵 *“ମାଟି ମାଠିଆରେ ପାଣି କାହିଁକି ଥଣ୍ଡା ରହେ? ପାଣି କଣ ୧୦୦ ଡିଗ୍ରୀରେ ଫୁଟୁଛି?”*
 - **Explain to Judges**: 
-  *"Notice how Sunita doesn't have to type. She taps or speaks in Odia. The system immediately synthesizes audio. Watch the warm glowing karaoke box highlight sentence-by-sentence as it speaks, so Sunita can listen and read simultaneously without cognitive strain."*
+  *"Notice how Lakshya doesn't have to type. She taps or speaks in Odia. The system immediately synthesizes audio. Watch the warm glowing karaoke box highlight sentence-by-sentence as it speaks, so Lakshya can listen and read simultaneously without cognitive strain."*
 
 #### Demo Step 2: Open Judge Inspector Mode (Live Telemetry)
 - **Action**: Click top-right **"🧠 Agent Inspector (Judge Mode)"** button.
 - **Explain to Judges**:
   *"Now look at this — for judges and educators, we provide 100% transparency. In the inspector drawer, you see all 5 steps of the LangGraph execution:
-  Step 1: Intake & Prerequisite Diagnosis flagged that Sunita confused boiling with evaporation.
+  Step 1: Intake & Prerequisite Diagnosis flagged that Lakshya confused boiling with evaporation.
   Step 2: Foundation Remediation scaffolded latent heat.
   Step 3: Vernacular Reasoning grounded it in rural Odisha context — the earthen pot and rice cooking pot.
   Step 4: Formative Assessment generated two micro-quiz questions.
@@ -90,7 +90,7 @@
 #### Demo Step 3: Test Zero-Data Offline Simulation & Auto-Sync
 - **Action**: Click topbar **"⚡ Wi-Fi Off (Edge Agent)"** button.
 - **Explain to Judges**:
-  *"Now let's simulate what happens when Sunita loses internet in her village. Notice the UI switches to Offline Edge Mode. She can still ask doubts, receive local vernacular explanations from IndexedDB cache, and answer quizzes. Notice the Outbox pill increments: '2 queued'.
+  *"Now let's simulate what happens when Lakshya loses internet in her village. Notice the UI switches to Offline Edge Mode. She can still ask doubts, receive local vernacular explanations from IndexedDB cache, and answer quizzes. Notice the Outbox pill increments: '2 queued'.
   Now, when connectivity returns — I click 'Sync Now' — boom! The offline actions batch-sync to MongoDB, and the outbox clears."*
 
 #### Demo Step 4: Real-Time WebSocket Questionnaire
