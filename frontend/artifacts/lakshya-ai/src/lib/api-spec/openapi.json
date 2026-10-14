@@ -1,0 +1,2335 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "EkalSahayak (Lakshya AI) - Deterministic Pedagogical Agent Engine",
+    "description": "Production-grade, vernacular-first agentic EdTech engine for Class 9 & 10 rural learners in Odisha.",
+    "version": "2.1.0"
+  },
+  "paths": {
+    "/metrics": {
+      "get": {
+        "summary": "Metrics",
+        "description": "Endpoint that serves Prometheus metrics.",
+        "operationId": "metrics_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "Health & Diagnostics"
+        ],
+        "summary": "Health Status",
+        "description": "General service identification.",
+        "operationId": "health_status_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health & Diagnostics"
+        ],
+        "summary": "Health Status",
+        "description": "General service identification.",
+        "operationId": "health_status_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/live": {
+      "get": {
+        "tags": [
+          "Health & Diagnostics"
+        ],
+        "summary": "Liveness Probe",
+        "description": "Kubernetes / Docker liveness probe: returns 200 if process is up.",
+        "operationId": "liveness_probe_health_live_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "Health & Diagnostics"
+        ],
+        "summary": "Readiness Probe",
+        "description": "Readiness probe: pings MongoDB with 1s timeout; fails fast with 503 if unreachable.",
+        "operationId": "readiness_probe_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/db/status": {
+      "get": {
+        "tags": [
+          "Health & Diagnostics"
+        ],
+        "summary": "Get Db Status",
+        "description": "Admin-only diagnostic endpoint displaying MongoDB collection statistics.",
+        "operationId": "get_db_status_api_db_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register",
+        "description": "Registers a new user account and creates persistent student profile.",
+        "operationId": "register_api_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login",
+        "description": "Authenticates user with username or email, issuing access and refresh tokens.\n\nImplements timing-attack equalization and account lockout.",
+        "operationId": "login_api_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Refresh Tokens",
+        "description": "Rotates refresh token and issues fresh access token.",
+        "operationId": "refresh_tokens_api_auth_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Logout",
+        "description": "Revokes the refresh token upon user logout.",
+        "operationId": "logout_api_auth_logout_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get Me",
+        "description": "Returns the authenticated user's profile identity including preferences.",
+        "operationId": "get_me_api_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/me/preferences": {
+      "patch": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Update Preferences",
+        "description": "Updates the user's interface, numerals, and AI language preferences.",
+        "operationId": "update_preferences_api_auth_me_preferences_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPreferencesUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferences"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/agent/interact": {
+      "post": {
+        "tags": [
+          "Agent Workflow"
+        ],
+        "summary": "Interact",
+        "description": "Executes the deterministic LangGraph pedagogical loop for authenticated student.",
+        "operationId": "interact_api_agent_interact_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InteractRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InteractResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/agent/profile": {
+      "get": {
+        "tags": [
+          "Agent Workflow"
+        ],
+        "summary": "Get Profile",
+        "description": "Returns the authenticated student's persistent learning profile & mastery map.",
+        "operationId": "get_profile_api_agent_profile_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/agent/followups": {
+      "get": {
+        "tags": [
+          "Agent Workflow"
+        ],
+        "summary": "Get Followups",
+        "description": "Returns spaced repetition review items due as of the current timestamp.",
+        "operationId": "get_followups_api_agent_followups_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/agent/offline-pack": {
+      "get": {
+        "tags": [
+          "Agent Workflow"
+        ],
+        "summary": "Get Offline Pack",
+        "description": "Downloads compact (<80 KB) serialized curriculum bundle for offline edge execution.",
+        "operationId": "get_offline_pack_api_agent_offline_pack_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/agent/traces": {
+      "get": {
+        "tags": [
+          "Agent Workflow"
+        ],
+        "summary": "Get Trace Audit Logs",
+        "description": "Admin-only endpoint for inspecting historical LangGraph execution telemetry.",
+        "operationId": "get_trace_audit_logs_api_agent_traces_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/quiz-submit": {
+      "post": {
+        "tags": [
+          "Agent Workflow"
+        ],
+        "summary": "Submit Quiz Alias",
+        "description": "Server-authoritative quiz answer submission alias. Strictly ignores/forbids client answers.",
+        "operationId": "submit_quiz_alias_api_agent_quiz_submit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Req"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/agent/reflect-failure": {
+      "post": {
+        "tags": [
+          "Agent Workflow"
+        ],
+        "summary": "Reflect Failure",
+        "description": "Antigravity Failure Recovery Loop: Diagnoses misconception/gap and produces remedial fix.",
+        "operationId": "reflect_failure_api_agent_reflect_failure_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReflectFailureRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/kb/glossary": {
+      "get": {
+        "tags": [
+          "Curriculum KB & Feedback"
+        ],
+        "summary": "Get Glossary",
+        "description": "Returns bilingual science terms and contextual definitions for requested locale.",
+        "operationId": "get_glossary_api_kb_glossary_get",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en",
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/feedback/translation": {
+      "post": {
+        "tags": [
+          "Curriculum KB & Feedback"
+        ],
+        "summary": "Submit Translation Feedback",
+        "description": "Stores user translation correction feedback for continuous quality improvement.",
+        "operationId": "submit_translation_feedback_api_feedback_translation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranslationFeedbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/quiz/quiz-submit": {
+      "post": {
+        "tags": [
+          "Quiz & Mastery"
+        ],
+        "summary": "Submit Answer",
+        "description": "Submits an answer for server-authoritative scoring & mastery graph update.",
+        "operationId": "submit_answer_api_quiz_quiz_submit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizAnswerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizAnswerResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/quiz/answer": {
+      "post": {
+        "tags": [
+          "Quiz & Mastery"
+        ],
+        "summary": "Submit Answer",
+        "description": "Submits an answer for server-authoritative scoring & mastery graph update.",
+        "operationId": "submit_answer_api_quiz_answer_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizAnswerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizAnswerResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/quiz/topics": {
+      "get": {
+        "tags": [
+          "Quiz & Mastery"
+        ],
+        "summary": "Get Quiz Topics",
+        "description": "Returns available syllabus topics for quizzing.",
+        "operationId": "get_quiz_topics_api_quiz_topics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/quiz/questions": {
+      "get": {
+        "tags": [
+          "Quiz & Mastery"
+        ],
+        "summary": "Get Questions",
+        "description": "Retrieves questions stripped of correct answers.",
+        "operationId": "get_questions_api_quiz_questions_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TopicEnum",
+              "description": "Curriculum topic to retrieve questions for"
+            },
+            "description": "Curriculum topic to retrieve questions for"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 5,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuizQuestionPublic"
+                  },
+                  "title": "Response Get Questions Api Quiz Questions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/quiz/history": {
+      "get": {
+        "tags": [
+          "Quiz & Mastery"
+        ],
+        "summary": "Get Quiz History",
+        "description": "Returns the authenticated student's previous quiz attempts.",
+        "operationId": "get_quiz_history_api_quiz_history_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tts": {
+      "post": {
+        "tags": [
+          "Vernacular Audio"
+        ],
+        "summary": "Text To Speech",
+        "description": "Synthesizes authentic Indic/Odia speech audio with SHA-256 caching.",
+        "operationId": "text_to_speech_api_agent_tts_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 800,
+              "description": "Text to synthesize (max 800 chars)",
+              "title": "Text"
+            },
+            "description": "Text to synthesize (max 800 chars)"
+          },
+          {
+            "name": "slow",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Slow"
+            }
+          },
+          {
+            "name": "engine",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EngineEnum",
+              "default": "indic_natural"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Vernacular Audio"
+        ],
+        "summary": "Text To Speech",
+        "description": "Synthesizes authentic Indic/Odia speech audio with SHA-256 caching.",
+        "operationId": "text_to_speech_api_agent_tts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 800,
+              "description": "Text to synthesize (max 800 chars)",
+              "title": "Text"
+            },
+            "description": "Text to synthesize (max 800 chars)"
+          },
+          {
+            "name": "slow",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Slow"
+            }
+          },
+          {
+            "name": "engine",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EngineEnum",
+              "default": "indic_natural"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/stt": {
+      "post": {
+        "tags": [
+          "Vernacular Audio"
+        ],
+        "summary": "Speech To Text",
+        "description": "Transcribes vernacular spoken audio using honest configured STT provider.",
+        "operationId": "speech_to_text_api_agent_stt_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "text_hint",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Text Hint"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_speech_to_text_api_agent_stt_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/STTResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voice/telemetry": {
+      "get": {
+        "tags": [
+          "Vernacular Audio"
+        ],
+        "summary": "Get Voice Telemetry",
+        "description": "Admin-only endpoint for inspecting TTS cache and STT engine metrics.",
+        "operationId": "get_voice_telemetry_api_voice_telemetry_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/agent/voice/capabilities": {
+      "get": {
+        "tags": [
+          "Vernacular Audio"
+        ],
+        "summary": "Get Voice Capabilities",
+        "description": "Returns honest voice TTS/STT capabilities for the requested language code.",
+        "operationId": "get_voice_capabilities_api_agent_voice_capabilities_get",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en",
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/sync": {
+      "post": {
+        "tags": [
+          "Offline Sync"
+        ],
+        "summary": "Sync Offline Actions",
+        "description": "Reconciles offline learning events with server-authoritative scoring & deduplication.",
+        "operationId": "sync_offline_actions_api_agent_sync_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncBatchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AgentTraceItem": {
+        "properties": {
+          "step_name": {
+            "type": "string",
+            "title": "Step Name"
+          },
+          "node": {
+            "type": "string",
+            "title": "Node"
+          },
+          "tool_called": {
+            "type": "string",
+            "title": "Tool Called"
+          },
+          "tool_args": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Tool Args"
+          },
+          "tool_output": {
+            "title": "Tool Output"
+          },
+          "pedagogical_intent": {
+            "type": "string",
+            "title": "Pedagogical Intent"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step_name",
+          "node",
+          "tool_called",
+          "tool_args",
+          "tool_output",
+          "pedagogical_intent"
+        ],
+        "title": "AgentTraceItem"
+      },
+      "AuthResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserPublic"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "refresh_token",
+          "user"
+        ],
+        "title": "AuthResponse",
+        "description": "Successful authentication response."
+      },
+      "Body_speech_to_text_api_agent_stt_post": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "title": "Body_speech_to_text_api_agent_stt_post"
+      },
+      "DifficultyEnum": {
+        "type": "string",
+        "enum": [
+          "easy",
+          "medium",
+          "hard"
+        ],
+        "title": "DifficultyEnum"
+      },
+      "EngineEnum": {
+        "type": "string",
+        "enum": [
+          "indic_natural",
+          "standard"
+        ],
+        "title": "EngineEnum"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InputTypeEnum": {
+        "type": "string",
+        "enum": [
+          "text",
+          "voice"
+        ],
+        "title": "InputTypeEnum"
+      },
+      "InteractRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Query",
+            "description": "Student question (max 500 characters)"
+          },
+          "language": {
+            "$ref": "#/components/schemas/LanguageEnum",
+            "default": "odia"
+          },
+          "input_type": {
+            "$ref": "#/components/schemas/InputTypeEnum",
+            "default": "text"
+          },
+          "is_offline": {
+            "type": "boolean",
+            "title": "Is Offline",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "InteractRequest",
+        "description": "Student query payload for LangGraph pedagogical engine.\n\nNOTE: student_id is derived strictly from the authenticated JWT token!"
+      },
+      "InteractResponse": {
+        "properties": {
+          "detected_topic": {
+            "type": "string",
+            "title": "Detected Topic"
+          },
+          "misconception_diagnosed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Misconception Diagnosed"
+          },
+          "prerequisite_missing": {
+            "type": "boolean",
+            "title": "Prerequisite Missing",
+            "default": false
+          },
+          "prerequisite_topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prerequisite Topic"
+          },
+          "vernacular_analogy": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vernacular Analogy"
+          },
+          "micro_quiz": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Micro Quiz"
+          },
+          "updated_mastery": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated Mastery"
+          },
+          "final_response_odia": {
+            "type": "string",
+            "title": "Final Response Odia"
+          },
+          "final_audio_script": {
+            "type": "string",
+            "title": "Final Audio Script"
+          },
+          "next_followup_plan": {
+            "type": "string",
+            "title": "Next Followup Plan"
+          },
+          "traces": {
+            "items": {
+              "$ref": "#/components/schemas/AgentTraceItem"
+            },
+            "type": "array",
+            "title": "Traces"
+          },
+          "llm_used": {
+            "type": "boolean",
+            "title": "Llm Used",
+            "default": false
+          },
+          "model_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Name"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "language_served": {
+            "type": "string",
+            "title": "Language Served",
+            "default": "or"
+          },
+          "machine_translated": {
+            "type": "boolean",
+            "title": "Machine Translated",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "detected_topic",
+          "final_response_odia",
+          "final_audio_script",
+          "next_followup_plan",
+          "traces",
+          "request_id"
+        ],
+        "title": "InteractResponse",
+        "description": "Full pedagogical execution result with auditable traces."
+      },
+      "LanguageEnum": {
+        "type": "string",
+        "enum": [
+          "en",
+          "hi",
+          "or",
+          "bn",
+          "mr",
+          "gu",
+          "ta",
+          "te",
+          "kn",
+          "ml",
+          "pa",
+          "ur",
+          "as",
+          "brx",
+          "doi",
+          "ks",
+          "kok",
+          "mai",
+          "mni",
+          "ne",
+          "sa",
+          "sat",
+          "sd",
+          "bho",
+          "tcy",
+          "kxu",
+          "raj",
+          "hne",
+          "mag",
+          "hi-Latn",
+          "odia",
+          "english"
+        ],
+        "title": "LanguageEnum"
+      },
+      "NumeralSystem": {
+        "type": "string",
+        "enum": [
+          "latin",
+          "local"
+        ],
+        "title": "NumeralSystem"
+      },
+      "QuizAnswerRequest": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Question Id"
+          },
+          "selected_index": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Selected Index",
+            "description": "Selected option index (0-based)"
+          },
+          "attempt_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 4,
+            "title": "Attempt Id",
+            "description": "Unique client attempt UUID for idempotency"
+          },
+          "time_taken_ms": {
+            "type": "integer",
+            "maximum": 60000.0,
+            "minimum": 0.0,
+            "title": "Time Taken Ms",
+            "description": "Response time clamped to 0-60000ms",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "question_id",
+          "selected_index",
+          "attempt_id"
+        ],
+        "title": "QuizAnswerRequest",
+        "description": "Client request to submit a question answer.\n\nServer-Authoritative Anti-Cheat:\n- correct_option_index is NOT accepted from client!\n- Server looks up the official correct index from the question bank."
+      },
+      "QuizAnswerResponse": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "title": "Question Id"
+          },
+          "selected_index": {
+            "type": "integer",
+            "title": "Selected Index"
+          },
+          "correct": {
+            "type": "boolean",
+            "title": "Correct"
+          },
+          "correct_index": {
+            "type": "integer",
+            "title": "Correct Index"
+          },
+          "score_awarded": {
+            "type": "integer",
+            "title": "Score Awarded"
+          },
+          "explanation_odia": {
+            "type": "string",
+            "title": "Explanation Odia"
+          },
+          "explanation_english": {
+            "type": "string",
+            "title": "Explanation English"
+          },
+          "new_mastery": {
+            "type": "number",
+            "title": "New Mastery"
+          },
+          "streak": {
+            "type": "integer",
+            "title": "Streak"
+          },
+          "daily_gain_capped": {
+            "type": "boolean",
+            "title": "Daily Gain Capped",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id",
+          "selected_index",
+          "correct",
+          "correct_index",
+          "score_awarded",
+          "explanation_odia",
+          "explanation_english",
+          "new_mastery",
+          "streak"
+        ],
+        "title": "QuizAnswerResponse",
+        "description": "Server-authoritative evaluation result."
+      },
+      "QuizQuestionPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "topic": {
+            "$ref": "#/components/schemas/TopicEnum"
+          },
+          "difficulty": {
+            "$ref": "#/components/schemas/DifficultyEnum"
+          },
+          "prompt_odia": {
+            "type": "string",
+            "title": "Prompt Odia"
+          },
+          "prompt_english": {
+            "type": "string",
+            "title": "Prompt English"
+          },
+          "options_odia": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options Odia"
+          },
+          "options_english": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options English"
+          },
+          "prerequisite": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prerequisite"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "topic",
+          "difficulty",
+          "prompt_odia",
+          "prompt_english",
+          "options_odia",
+          "options_english"
+        ],
+        "title": "QuizQuestionPublic",
+        "description": "Public question item without revealing the answer."
+      },
+      "ReflectFailureRequest": {
+        "properties": {
+          "topic": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Topic",
+            "default": "evaporation"
+          },
+          "question_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Question Id"
+          },
+          "selected_index": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Selected Index"
+          },
+          "student_query": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Student Query"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "question_id",
+          "selected_index"
+        ],
+        "title": "ReflectFailureRequest",
+        "description": "Payload for Antigravity failure reflection & pedagogical recovery."
+      },
+      "RefreshTokenRequest": {
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "minLength": 16,
+            "title": "Refresh Token",
+            "description": "Cryptographic refresh token"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "refresh_token"
+        ],
+        "title": "RefreshTokenRequest",
+        "description": "Schema for rotating access tokens."
+      },
+      "STTResponse": {
+        "properties": {
+          "transcript": {
+            "type": "string",
+            "title": "Transcript"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "engine": {
+            "type": "string",
+            "title": "Engine"
+          },
+          "duration_ms": {
+            "type": "number",
+            "title": "Duration Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transcript",
+          "confidence",
+          "provider",
+          "engine",
+          "duration_ms"
+        ],
+        "title": "STTResponse",
+        "description": "Honest Speech-to-Text transcription output."
+      },
+      "SupportedLanguage": {
+        "type": "string",
+        "enum": [
+          "en",
+          "hi",
+          "or",
+          "bn",
+          "mr",
+          "gu",
+          "ta",
+          "te",
+          "kn",
+          "ml",
+          "pa",
+          "ur",
+          "as",
+          "brx",
+          "doi",
+          "ks",
+          "kok",
+          "mai",
+          "mni",
+          "ne",
+          "sa",
+          "sat",
+          "sd",
+          "bho",
+          "tcy",
+          "kxu",
+          "raj",
+          "hne",
+          "mag",
+          "hi-Latn"
+        ],
+        "title": "SupportedLanguage"
+      },
+      "SyncBatchRequest": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/SyncEvent"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Actions",
+            "description": "Up to 50 offline events per batch"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "actions"
+        ],
+        "title": "SyncBatchRequest",
+        "description": "Batch of offline events submitted upon reconnection."
+      },
+      "SyncBatchResponse": {
+        "properties": {
+          "synced_count": {
+            "type": "integer",
+            "title": "Synced Count"
+          },
+          "skipped_count": {
+            "type": "integer",
+            "title": "Skipped Count"
+          },
+          "updated_mastery": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Updated Mastery"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "synced_count",
+          "skipped_count",
+          "updated_mastery",
+          "message"
+        ],
+        "title": "SyncBatchResponse",
+        "description": "Result of batch synchronization."
+      },
+      "SyncEvent": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 4,
+            "title": "Event Id",
+            "description": "Client-generated unique UUID"
+          },
+          "type": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Type",
+            "description": "E.g., 'quiz_answer', 'doubt_asked'"
+          },
+          "question_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question Id"
+          },
+          "selected_index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Index"
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic"
+          },
+          "client_ts": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Client Ts",
+            "description": "Timestamp recorded on device"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "type",
+          "client_ts"
+        ],
+        "title": "SyncEvent",
+        "description": "Raw offline learning event logged while disconnected.\n\nServer-Authoritative Anti-Cheat:\n- client 'score' is STRICTLY forbidden and not present in schema!\n- Server re-evaluates answers from question bank using question_id & selected_index."
+      },
+      "TopicEnum": {
+        "type": "string",
+        "enum": [
+          "evaporation",
+          "latent_heat",
+          "cell_biology",
+          "mitochondria",
+          "motion",
+          "force"
+        ],
+        "title": "TopicEnum"
+      },
+      "TranslationFeedbackRequest": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Key",
+            "description": "Translation key or text identifier"
+          },
+          "lang": {
+            "type": "string",
+            "maxLength": 16,
+            "minLength": 2,
+            "title": "Lang",
+            "description": "Locale code"
+          },
+          "suggestion": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Suggestion",
+            "description": "Suggested correction"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "lang",
+          "suggestion"
+        ],
+        "title": "TranslationFeedbackRequest",
+        "description": "Payload to report bad translation in the picker."
+      },
+      "UserLoginRequest": {
+        "properties": {
+          "username_or_email": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 3,
+            "title": "Username Or Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "username_or_email",
+          "password"
+        ],
+        "title": "UserLoginRequest",
+        "description": "Schema for user authentication."
+      },
+      "UserPreferences": {
+        "properties": {
+          "language": {
+            "$ref": "#/components/schemas/SupportedLanguage",
+            "description": "Selected app language",
+            "default": "en"
+          },
+          "numerals": {
+            "$ref": "#/components/schemas/NumeralSystem",
+            "description": "Numeral digit system (0-9 vs local digits)",
+            "default": "latin"
+          },
+          "ai_same_language": {
+            "type": "boolean",
+            "title": "Ai Same Language",
+            "description": "Whether AI answers in same language as the app",
+            "default": true
+          },
+          "keep_english_terms": {
+            "type": "boolean",
+            "title": "Keep English Terms",
+            "description": "Whether to preserve English terms in brackets",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "UserPreferences",
+        "description": "User UI & Interaction preferences."
+      },
+      "UserPreferencesUpdate": {
+        "properties": {
+          "language": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SupportedLanguage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "numerals": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NumeralSystem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ai_same_language": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Same Language"
+          },
+          "keep_english_terms": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keep English Terms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "UserPreferencesUpdate",
+        "description": "Payload to patch user preferences."
+      },
+      "UserPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "grade": {
+            "type": "string",
+            "title": "Grade"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/UserPreferences"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "email",
+          "role",
+          "grade",
+          "language",
+          "created_at"
+        ],
+        "title": "UserPublic",
+        "description": "Public user identity returned to clients."
+      },
+      "UserRegisterRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 3,
+            "title": "Username",
+            "description": "Unique username"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email",
+            "description": "Valid user email address"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 10,
+            "title": "Password",
+            "description": "Password (min 10 characters)"
+          },
+          "grade": {
+            "type": "string",
+            "maxLength": 32,
+            "title": "Grade",
+            "default": "Class 9"
+          },
+          "language": {
+            "type": "string",
+            "maxLength": 16,
+            "title": "Language",
+            "default": "odia"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole",
+            "default": "student"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "username",
+          "email",
+          "password"
+        ],
+        "title": "UserRegisterRequest",
+        "description": "Schema for student/user registration."
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": [
+          "student",
+          "teacher",
+          "admin"
+        ],
+        "title": "UserRole"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
