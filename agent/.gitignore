@@ -80,3 +80,27 @@ Desktop.ini
 # Local uploads and generated artifacts
 uploads/
 generated/
+.audio_cache/
+*.mp3
+*.wav
+
+# Datasets, Models & Large Binaries
+dataset/
+**/dataset/
+*.pdf
+*.pkl
+*.pickle
+.coverage
+htmlcov/
+
+# Screenshots & Media
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.bmp
+screenshots/
+**/screenshots/
+media/
+**/media/
