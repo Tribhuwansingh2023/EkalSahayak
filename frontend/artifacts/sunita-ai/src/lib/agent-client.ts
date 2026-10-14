@@ -212,7 +212,7 @@ export async function askAgent(
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
 
     const res = await fetch("/api/agent/interact", {
       method: "POST",
@@ -404,4 +404,140 @@ export async function getVoiceTelemetry(): Promise<any> {
     engine_stt: "Bhashini (ULCA / AI4Bharat) + Whisper Vernacular ASR Pipeline"
   };
 }
+
+export async function getBackendHealth(): Promise<{ status: string; service: string; version: string; framework: string; active_curriculum: string }> {
+  try {
+    const res = await fetch("/api/health");
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    // ignore
+  }
+  return {
+    status: "offline",
+    service: "sunita-ai-agent-engine",
+    version: "2.0.0",
+    framework: "LangGraph + MongoDB + Real-Time WebSockets",
+    active_curriculum: "BSE Odisha Class 9 Science"
+  };
+}
+
+export async function getDbStatus(): Promise<{ success: boolean; database: any; collection_stats: any }> {
+  try {
+    const res = await fetch("/api/db/status");
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    // ignore
+  }
+  return {
+    success: false,
+    database: { connected: false, error: "Backend not reached" },
+    collection_stats: { users_count: 0, profiles_count: 0, questions_count: 6, quiz_sessions_count: 0 }
+  };
+}
+
+export async function getVoiceSamples(): Promise<Array<{ id: string; prompt_odia: string; concept: string; label: string; phonetic: string }>> {
+  try {
+    const res = await fetch("/api/agent/voice/samples");
+    if (res.ok) {
+      const data = await res.json();
+      return data.samples || [];
+    }
+  } catch (e) {
+    // ignore
+  }
+  return [
+    {
+      id: "sample_evap_pot",
+      prompt_odia: "ମାଟି ମାଠିଆରେ ପାଣି କାହିଁକି ଥଣ୍ଡା ରହେ?",
+      concept: "evaporation",
+      label: "🍵 Earthen Pot Cooling",
+      phonetic: "माटि माठिआरे पाणि काहिँकि थण्डा रहे?"
+    },
+    {
+      id: "sample_latent_steam",
+      prompt_odia: "ଭାତ ହାଣ୍ଡିର ବାଷ୍ପ କାହିଁକି ଅଧିକ ପୋଡ଼ିଥାଏ?",
+      concept: "latent_heat",
+      label: "🍚 Rice Pot Steam (Latent Heat)",
+      phonetic: "भात हाण्डिर बाष्प काहिँकि अधिक पोड़िथाए?"
+    },
+    {
+      id: "sample_evap_clothes",
+      prompt_odia: "ଖରାଦିନେ ଓଦା ଲୁଗା ଶୀଘ୍ର କାହିଁକି ଶୁଖିଯାଏ?",
+      concept: "evaporation",
+      label: "👕 Drying Clothes in Sun",
+      phonetic: "खरादिने ओदा लुगा शीघ्र काहिँकि शुखिजाए?"
+    },
+    {
+      id: "sample_cell_mito",
+      prompt_odia: "କୋଷର ଶକ୍ତି କେନ୍ଦ୍ର (Powerhouse) କାହାକୁ କୁହାଯାଏ?",
+      concept: "cell_structure",
+      label: "🔬 Powerhouse of Cell",
+      phonetic: "कोषर शक्ति केन्द्र माइटोकण्ड्रिआ काहाकु कुहाजाए?"
+    }
+  ];
+}
+
+export async function getQuizTopics(): Promise<Array<{ id: string; name_odia: string; name_en: string; count: number }>> {
+  try {
+    const res = await fetch("/api/quiz/topics");
+    if (res.ok) {
+      const data = await res.json();
+      return data.topics || [];
+    }
+  } catch (e) {
+    // fallback
+  }
+  return [
+    { id: "all", name_odia: "ସମସ୍ତ ଅଧ୍ୟାୟ (All Topics)", name_en: "Full Syllabus Drill", count: 6 },
+    { id: "evaporation", name_odia: "ବାଷ୍ପୀଭବନ ଓ ସ୍ଫୁଟନ (Evaporation)", name_en: "Evaporation vs Boiling", count: 2 },
+    { id: "latent_heat", name_odia: "ଲୀନ ତାପ (Latent Heat)", name_en: "Latent Heat & Steam", count: 1 },
+    { id: "cell_structure", name_odia: "କୋଷ ଗଠନ (Cell Biology)", name_en: "Cell & Mitochondria", count: 1 },
+    { id: "motion", name_odia: "ଗତି ଓ ବିସ୍ଥାପନ (Motion)", name_en: "Motion & Displacement", count: 1 },
+    { id: "force", name_odia: "ବଳ ଓ ଗତି ନିୟମ (Force & Laws)", name_en: "Force & Inertia", count: 1 }
+  ];
+}
+
+export async function getQuizQuestions(topic?: string): Promise<any[]> {
+  try {
+    const url = topic && topic !== "all" ? `/api/quiz/questions?topic=${encodeURIComponent(topic)}` : "/api/quiz/questions";
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      return data.questions || [];
+    }
+  } catch (e) {
+    // fallback
+  }
+  return [];
+}
+
+export async function getQuizHistory(studentId: string = "sunita_class9"): Promise<any[]> {
+  try {
+    const res = await fetch(`/api/quiz/history?student_id=${encodeURIComponent(studentId)}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data.history || [];
+    }
+  } catch (e) {
+    // fallback
+  }
+  return [];
+}
+
+export async function getOfflinePack(studentId: string = "sunita_class9"): Promise<any> {
+  try {
+    const res = await fetch(`/api/agent/offline-pack?student_id=${encodeURIComponent(studentId)}`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    // fallback
+  }
+  return null;
+}
+
 

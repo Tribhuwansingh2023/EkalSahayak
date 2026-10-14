@@ -508,3 +508,16 @@ div.card:has(> .card-heading + .smalltext + .voice-box) > .card-heading h2 span{
   color: #991b1b;
 }
 
+.landing-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  background: #0b101b;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+

@@ -17,6 +17,7 @@ class ToolTrace(BaseModel):
 
 
 class StudentProfile(BaseModel):
+    user_id: Optional[str] = None
     student_id: str = "sunita_class9"
     name: str = "Sunita"
     grade: int = 9

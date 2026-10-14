@@ -1,16 +1,19 @@
 """
-FastAPI Server for Sunita AI Agent Engine.
+FastAPI Server for Sunita AI & EkalSahayak EdTech System.
 Exposes endpoints for:
-1. Agent interaction with full decision traces
-2. Student learning profile & mastery graph
-3. Quiz response submission & evaluation
-4. Offline curriculum pack generation
-5. Offline-to-online reconciliation sync
+1. Agent interaction with full deterministic LangGraph decision traces
+2. Student learning profile & persistent mastery graph (MongoDB)
+3. User Registration & Login Authentication with JWT (MongoDB)
+4. Real-time WebSocket Questionnaire Engine (/ws/quiz)
+5. Quiz question bank, topic directory, and session history
+6. Voice TTS and STT vernacular processing
+7. Offline curriculum pack generation & offline-to-online sync
 """
 
 import os
+from datetime import datetime
 from typing import Dict, Any, Optional, List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -18,11 +21,24 @@ from graph import sunita_agent_graph
 from profile_manager import profile_manager
 from sync_manager import sync_manager
 from curriculum_kb import ODISHA_CLASS9_SCIENCE_KB
+from db import init_db, check_db_connection, get_db, SEED_QUESTIONS
+from auth import (
+    UserRegisterRequest,
+    UserLoginRequest,
+    AuthResponse,
+    get_password_hash,
+    verify_password,
+    create_access_token,
+    get_current_user,
+    get_current_user_optional
+)
+from quiz_ws import handle_quiz_websocket
+from voice_service import voice_service
 
 app = FastAPI(
-    title="Sunita AI - Deterministic Pedagogical Agent",
-    description="Agentic EdTech system for regional language learners in rural Odisha (Class 9 Science)",
-    version="1.0.0"
+    title="Sunita AI - Deterministic Pedagogical Agent & Real-Time EdTech Engine",
+    description="Agentic EdTech system for regional language learners in rural Odisha (Class 9 Science) backed by MongoDB & Real-Time WebSockets",
+    version="2.0.0"
 )
 
 # Enable CORS for Vite frontend
@@ -33,6 +49,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def on_startup():
+    """Initializes MongoDB connection, indexes, and question seeds on boot."""
+    success = await init_db()
+    if success:
+        print("[Sunita AI Server] MongoDB connection established & database initialized.")
+    else:
+        print("[Sunita AI Server] MongoDB running in fallback mode or connecting in background.")
 
 
 class InteractRequest(BaseModel):
@@ -56,15 +82,285 @@ class OfflineSyncRequest(BaseModel):
     actions: List[Dict[str, Any]]
 
 
+# ---------------------------------------------------------------------
+# System Health & Database Telemetry
+# ---------------------------------------------------------------------
+
 @app.get("/health")
+@app.get("/api/health")
 def health():
     return {
         "status": "healthy",
         "service": "sunita-ai-agent-engine",
-        "framework": "LangGraph (Deterministic State Graph Workflow)",
+        "version": "2.0.0",
+        "framework": "LangGraph + MongoDB + Real-Time WebSockets",
         "active_curriculum": "BSE Odisha Class 9 Science"
     }
 
+
+@app.get("/api/db/status")
+async def db_status():
+    """Returns MongoDB connectivity status and document counts."""
+    conn_info = await check_db_connection()
+    stats = {}
+    if conn_info.get("connected"):
+        database = get_db()
+        stats = {
+            "users_count": await database["users"].count_documents({}),
+            "profiles_count": await database["student_profiles"].count_documents({}),
+            "questions_count": await database["questions"].count_documents({}),
+            "quiz_sessions_count": await database["quiz_sessions"].count_documents({})
+        }
+    return {
+        "success": True,
+        "database": conn_info,
+        "collection_stats": stats
+    }
+
+
+# ---------------------------------------------------------------------
+# Authentication Endpoints (JWT + MongoDB)
+# ---------------------------------------------------------------------
+
+@app.post("/api/auth/register", response_model=AuthResponse)
+async def register_user(req: UserRegisterRequest):
+    """
+    Registers a new student or learner into MongoDB.
+    Initializes their learning profile, mastery graph, and issues a JWT token.
+    """
+    database = get_db()
+    users = database["users"]
+
+    # Check if username exists
+    existing_user = await users.find_one({"username": req.username})
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Username '{req.username}' is already taken."
+        )
+
+    # Check if email exists
+    existing_email = await users.find_one({"email": req.email})
+    if existing_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"An account with email '{req.email}' already exists."
+        )
+
+    # Hash password & insert user
+    password_hash = get_password_hash(req.password)
+    user_doc = {
+        "username": req.username,
+        "email": req.email,
+        "password_hash": password_hash,
+        "name": req.name,
+        "grade": req.grade,
+        "medium": req.medium,
+        "home_dialect": req.home_dialect,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    result = await users.insert_one(user_doc)
+    user_id = str(result.inserted_id)
+
+    # Initialize student learning profile in MongoDB
+    profile = await profile_manager.create_profile_for_user(
+        student_id=req.username,
+        name=req.name,
+        grade=req.grade,
+        medium=req.medium,
+        home_dialect=req.home_dialect,
+        user_id=user_id
+    )
+
+    # Issue JWT token
+    token = create_access_token({
+        "sub": req.username,
+        "user_id": user_id,
+        "name": req.name,
+        "grade": req.grade
+    })
+
+    return {
+        "success": True,
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": user_id,
+            "username": req.username,
+            "email": req.email,
+            "name": req.name,
+            "grade": req.grade,
+            "medium": req.medium,
+            "mastery_map": profile.get("mastery_map", {})
+        },
+        "message": f"Welcome {req.name}! Your learning account has been created."
+    }
+
+
+@app.post("/api/auth/login", response_model=AuthResponse)
+async def login_user(req: UserLoginRequest):
+    """
+    Authenticates student with username or email and password.
+    Returns JWT token and learning profile from MongoDB.
+    """
+    database = get_db()
+    users = database["users"]
+
+    # Search by username or email
+    user = await users.find_one({
+        "$or": [
+            {"username": req.username_or_email},
+            {"email": req.username_or_email}
+        ]
+    })
+
+    if not user or not verify_password(req.password, user.get("password_hash", "")):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username/email or password."
+        )
+
+    username = user["username"]
+    user_id = str(user["_id"])
+
+    # Fetch profile from MongoDB
+    profile = await profile_manager.get_profile_async(username)
+
+    # Generate token
+    token = create_access_token({
+        "sub": username,
+        "user_id": user_id,
+        "name": user.get("name", username),
+        "grade": user.get("grade", 9)
+    })
+
+    return {
+        "success": True,
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": user_id,
+            "username": username,
+            "email": user.get("email"),
+            "name": user.get("name", username),
+            "grade": user.get("grade", 9),
+            "medium": user.get("medium", "Odia"),
+            "mastery_map": profile.get("mastery_map", {})
+        },
+        "message": f"Welcome back, {user.get('name', username)}!"
+    }
+
+
+@app.get("/api/auth/me")
+async def get_current_user_profile(user: Dict[str, Any] = Depends(get_current_user)):
+    """Returns the authenticated user's credentials and their persistent MongoDB profile."""
+    username = user["username"]
+    profile = await profile_manager.get_profile_async(username)
+    return {
+        "success": True,
+        "user": user,
+        "profile": profile
+    }
+
+
+# ---------------------------------------------------------------------
+# Real-Time WebSocket Questionnaire Endpoint
+# ---------------------------------------------------------------------
+
+@app.websocket("/ws/quiz")
+async def quiz_websocket_endpoint(websocket: WebSocket):
+    """
+    High-performance real-time interactive quiz endpoint.
+    Streams questions, evaluates responses immediately, tracks streaks,
+    and saves session progress into MongoDB.
+    """
+    await handle_quiz_websocket(websocket)
+
+
+# ---------------------------------------------------------------------
+# Quiz Questions & Topics REST Endpoints
+# ---------------------------------------------------------------------
+
+@app.get("/api/quiz/topics")
+async def get_quiz_topics():
+    """Lists available curriculum topics for questionnaires with question counts."""
+    try:
+        database = get_db()
+        cursor = database["questions"].find({}, {"topic": 1, "difficulty": 1})
+        docs = await cursor.to_list(length=100)
+    except Exception:
+        docs = SEED_QUESTIONS
+
+    topic_counts: Dict[str, int] = {}
+    for d in docs:
+        t = d.get("topic", "general")
+        topic_counts[t] = topic_counts.get(t, 0) + 1
+
+    topics_meta = [
+        {"id": "all", "name_odia": "ସମସ୍ତ ଅଧ୍ୟାୟ (All Topics)", "name_en": "Full Syllabus Drill", "count": sum(topic_counts.values())},
+        {"id": "evaporation", "name_odia": "ବାଷ୍ପୀଭବନ ଓ ସ୍ଫୁଟନ (Evaporation)", "name_en": "Evaporation vs Boiling", "count": topic_counts.get("evaporation", 2)},
+        {"id": "latent_heat", "name_odia": "ଲୀନ ତାପ (Latent Heat)", "name_en": "Latent Heat & Steam", "count": topic_counts.get("latent_heat", 1)},
+        {"id": "cell_structure", "name_odia": "କୋଷ ଗଠନ (Cell Biology)", "name_en": "Cell & Mitochondria", "count": topic_counts.get("cell_structure", 1)},
+        {"id": "motion", "name_odia": "ଗତି ଓ ବିସ୍ଥାପନ (Motion)", "name_en": "Motion & Displacement", "count": topic_counts.get("motion", 1)},
+        {"id": "force", "name_odia": "ବଳ ଓ ଗତି ନିୟମ (Force & Laws)", "name_en": "Force & Inertia", "count": topic_counts.get("force", 1)},
+    ]
+
+    return {
+        "success": True,
+        "topics": topics_meta
+    }
+
+
+@app.get("/api/quiz/questions")
+async def get_quiz_questions(topic: Optional[str] = None):
+    """Fetches questions from MongoDB question bank."""
+    query = {}
+    if topic and topic != "all":
+        query["topic"] = topic
+
+    try:
+        database = get_db()
+        cursor = database["questions"].find(query, {"_id": 0})
+        questions = await cursor.to_list(length=50)
+    except Exception:
+        questions = []
+
+    if not questions:
+        if topic and topic != "all":
+            questions = [q for q in SEED_QUESTIONS if q.get("topic") == topic]
+        else:
+            questions = list(SEED_QUESTIONS)
+
+    return {
+        "success": True,
+        "count": len(questions),
+        "questions": questions
+    }
+
+
+@app.get("/api/quiz/history")
+async def get_quiz_history(student_id: str = "sunita_class9"):
+    """Returns past quiz session summaries and accuracy records from MongoDB."""
+    try:
+        database = get_db()
+        cursor = database["quiz_sessions"].find(
+            {"student_id": student_id},
+            {"_id": 0}
+        ).sort("created_at", -1).limit(10)
+        history = await cursor.to_list(length=10)
+    except Exception:
+        history = []
+
+    return {
+        "success": True,
+        "student_id": student_id,
+        "history": history
+    }
+
+
+# ---------------------------------------------------------------------
+# Agent Interaction & Pedagogical Workflow
+# ---------------------------------------------------------------------
 
 @app.post("/api/agent/interact")
 def interact(req: InteractRequest):
@@ -120,7 +416,7 @@ def interact(req: InteractRequest):
 
 @app.get("/api/agent/profile")
 def get_student_profile(student_id: str = "sunita_class9"):
-    """Returns Sunita's learning mastery map, misconceptions, and follow-ups."""
+    """Returns student learning mastery map, misconceptions, and follow-ups from MongoDB."""
     profile = profile_manager.get_profile(student_id)
     return {
         "success": True,
@@ -130,7 +426,7 @@ def get_student_profile(student_id: str = "sunita_class9"):
 
 @app.post("/api/agent/quiz-submit")
 def submit_quiz_answer(req: QuizSubmitRequest):
-    """Evaluates student quiz answer and updates the learning graph mastery."""
+    """Evaluates student quiz answer and updates the learning graph mastery in MongoDB."""
     is_correct = req.selected_option_index == req.correct_option_index
     delta = 0.12 if is_correct else -0.05
     updated = profile_manager.update_mastery(req.student_id, req.topic, delta)
@@ -159,8 +455,9 @@ def sync_offline_actions(req: OfflineSyncRequest):
     return result
 
 
-from voice_service import voice_service
-
+# ---------------------------------------------------------------------
+# Voice Engine (TTS & STT)
+# ---------------------------------------------------------------------
 
 class TTSRequest(BaseModel):
     text: str
@@ -181,7 +478,6 @@ def generate_tts(req: TTSRequest):
     """
     Synthesizes speech for rural learners using our Indic phonetic transliteration
     engine + high-fidelity acoustic models with memory and disk caching.
-    Returns audio/mpeg stream so Sunita can listen rather than read long texts on a small screen.
     """
     try:
         from fastapi.responses import Response
@@ -214,7 +510,6 @@ def transcribe_stt(req: STTRequest):
         audio_bytes = None
         if req.audio_base64:
             try:
-                # Strip data URL prefix if present
                 b64 = req.audio_base64.split(",")[-1]
                 audio_bytes = base64.b64decode(b64)
             except Exception:
@@ -279,5 +574,5 @@ def get_voice_samples():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)
-
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run("server:app", host="127.0.0.1", port=port, reload=True)

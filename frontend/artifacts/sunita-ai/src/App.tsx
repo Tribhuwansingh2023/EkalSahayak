@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Route, Switch, useLocation } from 'wouter';
-import { Activity, AudioLines, BookOpen, Brain, Check, CheckCircle2, ChevronRight, CircleHelp, Clock3, Cloud, CloudOff, Download, FlaskConical, House, Languages, Lightbulb, ListChecks, Mic, MoreHorizontal, Pause, Plus, RotateCcw, Settings, ShieldCheck, Sparkles, Target, UserRound, Users, Volume2, Wifi, X } from 'lucide-react';
+import { Activity, AudioLines, BookOpen, Brain, Check, CheckCircle2, ChevronRight, CircleHelp, Clock3, Cloud, CloudOff, Download, FlaskConical, House, Languages, Lightbulb, ListChecks, Mic, MoreHorizontal, Pause, Plus, RotateCcw, Settings, ShieldCheck, Sparkles, Target, UserRound, Users, Volume2, Wifi, X, Zap } from 'lucide-react';
+
 import { 
   askAgent, 
   submitQuizAnswer, 
@@ -14,6 +15,11 @@ import {
 } from './lib/agent-client';
 import { AgentTraceInspector } from './components/AgentTraceInspector';
 import { OdiaAudioPlayer } from './components/OdiaAudioPlayer';
+import { AuthModal } from './components/AuthModal';
+import { LandingPage } from './components/LandingPage';
+import { RealtimeQuizSession } from './components/RealtimeQuizSession';
+import { getStoredUser, verifyCurrentSession, clearAuthSession, AuthUser } from './lib/auth-service';
+
 
 type Student = { id: string; name: string; nameOdia?: string; nameLatin?: string; grade: number; avatarKey: string; streak: number; lastSubject: string; lastChapter: string; pin: string; masteryMap: Record<string, number>; examDate: string };
 type Doubt = { id: string; learnerId: string; transcript: string; transcriptOdia?: string; status: string; createdAt: string; answer: string; answerOdia?: string; citationDemo: string };
@@ -128,17 +134,95 @@ function App() {
   const [pin, setPin] = useState('');
   const [pendingId, setPendingId] = useState('');
   const [notice, setNotice] = useState('');
-  const learner = data.learners.find(p => p.id === data.activeId) || data.learners[0];
+  const [offlineQueueCount, setOfflineQueueCount] = useState(0);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('register');
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(getStoredUser());
+
+  const learner: Student = currentUser ? {
+    id: currentUser.username,
+    name: currentUser.name,
+    nameOdia: currentUser.name,
+    grade: currentUser.grade,
+    avatarKey: 'user',
+    streak: data.learners.find(l => l.id === currentUser.username)?.streak || 1,
+    lastSubject: 'Science',
+    lastChapter: 'BSE Odisha Class 9',
+    pin: '0000',
+    masteryMap: currentUser.mastery_map || data.learners.find(l => l.id === currentUser.username)?.masteryMap || { evaporation: 35, latent_heat: 20 },
+    examDate: '2025-03-18'
+  } : (data.learners.find(p => p.id === data.activeId) || data.learners[0]);
+
   const learnerName = learner.name || learner.nameLatin || 'Student';
   const isTeacher = path === '/teacher';
   const change = (next: Partial<AppData>) => setData(prev => ({ ...prev, ...next }));
 
-  const [offlineQueueCount, setOfflineQueueCount] = useState(0);
+  const handleOpenRegister = () => {
+    setAuthModalMode('register');
+    setAuthModalOpen(true);
+  };
+
+  const handleOpenLogin = () => {
+    setAuthModalMode('login');
+    setAuthModalOpen(true);
+  };
+
+  useEffect(() => {
+    verifyCurrentSession().then(u => {
+      if (u) setCurrentUser(u);
+    });
+    const handleAuth = (e: any) => {
+      setCurrentUser(e.detail?.user || null);
+    };
+    window.addEventListener('auth-changed', handleAuth);
+    return () => window.removeEventListener('auth-changed', handleAuth);
+  }, []);
+
+  const handleAuthSuccess = (user: AuthUser) => {
+    setCurrentUser(user);
+    setNotice(`ସ୍ୱାଗତ, ${user.name}! ଖାତା ସଫଳତାର ସହ ପ୍ରବେଶ ହେଲା।`);
+    
+    // Check if learner exists in local state
+    const existingIndex = data.learners.findIndex(l => l.id === user.username);
+    const updatedLearner: Student = {
+      id: user.username,
+      name: user.name,
+      nameOdia: user.name,
+      grade: user.grade,
+      avatarKey: 'user',
+      streak: existingIndex >= 0 ? data.learners[existingIndex].streak : 1,
+      lastSubject: 'Science',
+      lastChapter: 'BSE Odisha Class 9',
+      pin: '0000',
+      masteryMap: user.mastery_map || (existingIndex >= 0 ? data.learners[existingIndex].masteryMap : { evaporation: 35, latent_heat: 20 }),
+      examDate: '2025-03-18'
+    };
+
+    const newLearners = existingIndex >= 0
+      ? data.learners.map((l, i) => i === existingIndex ? updatedLearner : l)
+      : [updatedLearner, ...data.learners];
+
+    patch({
+      learners: newLearners,
+      activeId: user.username
+    });
+
+    // Real-time redirect to that particular named person's dashboard!
+    setPath('/home');
+  };
+
+  const handleLogout = () => {
+    clearAuthSession();
+    setCurrentUser(null);
+    setNotice('ସଫଳତାର ସହ ଲଗଆଉଟ୍ ହେଲେ (Logged out).');
+    setPath('/');
+  };
 
   const refreshOfflineCount = async () => {
     const items = await getOfflineOutbox();
     setOfflineQueueCount(items.length);
   };
+
 
   const onAgentExecution = (resp: AgentInteractResponse, query: string) => {
     setLatestResponse(resp);
@@ -280,92 +364,39 @@ function App() {
 
   const isPicker = path === '/';
   if (isPicker) return (
-    <div className="app-shell">
-      <div className="picker-wrap">
-        <div className="picker-top">
-          <Link href="/" className="brand" data-testid="link-brand">
-            <span className="brand-mark">E</span>
-            <span className="brand-name">EkalSahayak</span>
-          </Link>
-          <button className="trace-trigger" onClick={() => setTraceOpen(!traceOpen)} data-testid="button-picker-trace">
-            <Activity size={15} /> Trace
-          </button>
-        </div>
-        <div className="picker-hero">
-          <span className="eyebrow">Household Learning Companion</span>
-          <h1>Who is learning today?</h1>
-          <p>Select your profile. Your learning progress stays stored locally on this device.</p>
-        </div>
-        <div className="profile-grid">
-          {data.learners.map(p => {
-            const name = p.name || p.nameLatin || 'Student';
-            return (
-              <button className="profile-card" key={p.id} onClick={() => { setPendingId(p.id); setPin(''); setDialog('pin'); }} data-testid={`button-profile-${p.id}`}>
-                <span className="profile-illustration">{name.slice(0, 1)}</span>
-                <span>
-                  <h2>{name}</h2>
-                  <p>Class {p.grade} · {p.lastChapter}</p>
-                  <p>Streak: {p.streak} days</p>
-                </span>
-                <ChevronRight size={20} />
-              </button>
-            );
-          })}
-          <button className="profile-card add-profile" onClick={() => { setDialog('add'); }} data-testid="button-add-learner">
-            <Plus size={21} /> Add New Learner
-          </button>
-        </div>
-        <div className="card" style={{ maxWidth: 690, margin: '20px auto 0' }}>
-          <div className="row between">
-            <span>
-              <b>Voice Assistance</b>
-              <div className="smalltext muted">Uses browser speech recognition when available</div>
-            </span>
-            <input className="switch" type="checkbox" checked={data.voiceEnabled} onChange={e => patch({ voiceEnabled: e.target.checked })} aria-label="Voice Assistance" data-testid="toggle-voice-picker" />
-          </div>
-          <div className="smalltext muted" style={{ marginTop: 14 }}>
-            Profile PINs: Sunita 2468 · Rakesh 1357.
-          </div>
-        </div>
-        {traceOpen && <TracePanel data={data} change={change} close={() => setTraceOpen(false)} />}
-      </div>
-      {dialog && (
-        <Modal
-          mode={dialog}
-          setMode={setDialog}
-          learners={data.learners}
-          pin={pin}
-          setPin={setPin}
-          pendingId={pendingId}
-          onConfirm={name => {
-            if (dialog === 'pin') {
-              const p = data.learners.find(x => x.id === pendingId);
-              if (p && pin === p.pin) {
-                patch({ activeId: pendingId });
-                setDialog('');
-                setPath('/home');
-              } else setNotice('Incorrect PIN. Please check demo PIN.');
-            } else if (name) {
-              const n: Student = {
-                id: `learner-${Date.now()}`,
-                name: name,
-                grade: 7,
-                avatarKey: 'new',
-                streak: 0,
-                lastSubject: 'Science',
-                lastChapter: 'First Lesson',
-                pin: '0000',
-                masteryMap: {},
-                examDate: ''
-              };
-              patch({ learners: [...data.learners, n], activeId: n.id });
-              setDialog('');
-              setPath('/home');
-            }
-          }}
+    <div className="landing-wrapper">
+      <LandingPage
+        currentUser={currentUser}
+        onGetStarted={handleOpenRegister}
+        onLogin={handleOpenLogin}
+        onGoToDashboard={() => setPath('/home')}
+        onOpenTraceInspector={() => setTraceOpen(true)}
+        onLogout={handleLogout}
+      />
+      {traceOpen && (
+        <AgentTraceInspector 
+          traces={agentTraces} 
+          detectedTopic={detectedTopic}
+          misconceptionDiagnosed={misconceptionDiagnosed}
+          isOffline={data.onlineMode === 'offline'}
+          onClose={() => setTraceOpen(false)} 
         />
       )}
-      {notice && <div role="status" className="trace-trigger" style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 70 }}>{notice}</div>}
+      <AuthModal
+        isOpen={authModalOpen}
+        initialMode={authModalMode}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
+      {notice && (
+        <div 
+          role="status" 
+          className="trace-trigger" 
+          style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 70 }}
+        >
+          {notice}
+        </div>
+      )}
     </div>
   );
 
@@ -420,10 +451,48 @@ function App() {
                 <span>🧠 Agent Inspector (Judge Mode)</span>
                 {agentTraces.length > 0 && <span className="trace-pill">{agentTraces.length}</span>}
               </button>
+              {/* Authenticated User / Login Trigger */}
+              {currentUser ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    className="trace-trigger"
+                    style={{ background: 'rgba(245, 158, 11, 0.15)', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#fbbf24' }}
+                    onClick={() => setAuthModalOpen(true)}
+                    title="User Account Details"
+                    data-testid="button-user-profile"
+                  >
+                    <UserRound size={14} />
+                    <span>{currentUser.name}</span>
+                    <span className="trace-pill" style={{ background: '#f59e0b', color: '#000', fontWeight: 'bold' }}>
+                      Cl {currentUser.grade}
+                    </span>
+                  </button>
+                  <button
+                    className="btn soft small"
+                    style={{ padding: '4px 8px', fontSize: '11px' }}
+                    onClick={handleLogout}
+                    title="Log Out"
+                    data-testid="button-logout"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="trace-trigger"
+                  style={{ background: 'rgba(245, 158, 11, 0.15)', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#fbbf24', fontWeight: 'bold' }}
+                  onClick={handleOpenLogin}
+                  data-testid="button-login-open"
+                >
+                  <UserRound size={14} />
+                  <span>ପ୍ରବେଶ / Login</span>
+                </button>
+              )}
               <button className="avatar-dot" onClick={() => setPath('/')} aria-label="Switch Profile" data-testid="button-profile-menu">
                 {learnerName.slice(0, 1)}
               </button>
             </div>
+
           </header>
           {!ready && (
             <div className="card" aria-label="Loading">
@@ -482,8 +551,15 @@ function App() {
           onClose={() => setTraceOpen(false)} 
         />
       )}
+      <AuthModal
+        isOpen={authModalOpen}
+        initialMode={authModalMode}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
   );
+
 }
 
 function pageTitle(path: string) {
@@ -564,7 +640,7 @@ function HomePage({
     setLoading(true);
 
     try {
-      const resp = await askAgent(q, 'sunita_class9', data.onlineMode === 'offline');
+      const resp = await askAgent(q, learner.id || 'sunita_class9', data.onlineMode === 'offline');
       onAgentExecution(resp, q);
 
       // Auto update learner mastery in state if returned
@@ -693,7 +769,7 @@ function HomePage({
       qId,
       optIdx,
       correctIdx,
-      'sunita_class9'
+      learner.id || 'sunita_class9'
     );
     setQuizFeedback(prev => ({
       ...prev,
@@ -776,8 +852,49 @@ function HomePage({
             ମାଇକ୍ ବଟନ୍ ଦବାଇ କଥା ହୁଅ କିମ୍ବା ତଳେ ଥିବା ପ୍ରଶ୍ନ ଗୁଡ଼ିକ ଉପରେ କ୍ଲିକ୍ କରନ୍ତୁ।
           </div>
 
+          {/* Real-Time Live Quiz Callout Banner */}
+          <div 
+            onClick={() => setPath('/practice')}
+            style={{
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.06) 100%)',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              borderRadius: '14px',
+              padding: '12px 16px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              marginTop: '12px',
+              boxShadow: '0 4px 14px rgba(245, 158, 11, 0.1)'
+            }}
+            data-testid="banner-realtime-quiz"
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#f59e0b', color: '#0f172a', display: 'grid', placeItems: 'center', fontWeight: 'bold', flexShrink: 0 }}>
+                <Zap size={20} />
+              </div>
+              <div>
+                <b className="odia-font" style={{ color: '#fbbf24', fontSize: '13px' }}>
+                  ⚡ ଲାଇଭ୍ ରିଅଲ-ଟାଇମ୍ କୁଇଜ୍ (Live WebSocket Questionnaire)
+                </b>
+                <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
+                  Real-time adaptive questions, live score multiplier & spoken Odia feedback
+                </div>
+              </div>
+            </div>
+            <button 
+              className="btn gold small"
+              style={{ padding: '6px 12px', fontSize: '11px', flexShrink: 0 }}
+              onClick={(e) => { e.stopPropagation(); setPath('/practice'); }}
+            >
+              ଖେଳନ୍ତୁ →
+            </button>
+          </div>
+
           {/* Quick Doubt Pills for 1-click Demo with Mini Listen Buttons */}
           <div className="doubt-pills-container">
+
             {quickDoubts.map((qd, i) => (
               <div
                 key={i}
@@ -1232,12 +1349,14 @@ function PlanPage({ learner, data, patch, setPath }: { learner: Student; data: A
 }
 
 function PracticePage({ learner, data, patch, setPath }: { learner: Student; data: AppData; patch: (p: Partial<AppData>) => void; setPath: (s: string) => void }) {
+  const [practiceMode, setPracticeMode] = useState<'realtime' | 'offline'>('realtime');
   const [index, setIndex] = useState(0);
   const [choice, setChoice] = useState<number | null>(null);
   const [short, setShort] = useState('');
   const [feedback, setFeedback] = useState('');
   const q = questions[index];
   const done = data.quizDone;
+
 
   const submit = () => {
     if (choice === null && !short.trim()) {
@@ -1282,55 +1401,112 @@ function PracticePage({ learner, data, patch, setPath }: { learner: Student; dat
   return (
     <div className="grid-main">
       <section className="stack">
-        <div className="card">
-          <div className="card-heading">
-            <div>
-              <span className="eyebrow">Class {learner.grade} · Question {index + 1} of {questions.length}</span>
-              <h2 style={{ marginTop: 4 }}>{q.prompt}</h2>
+        {/* Real-time vs Offline Mode Toggle */}
+        <div style={{ display: 'flex', gap: '8px', background: '#1e293b', padding: '6px', borderRadius: '14px', border: '1px solid rgba(245, 158, 11, 0.25)', marginBottom: '8px' }}>
+          <button
+            onClick={() => setPracticeMode('realtime')}
+            style={{
+              flex: 1,
+              padding: '10px 14px',
+              borderRadius: '10px',
+              fontWeight: 700,
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              background: practiceMode === 'realtime' ? '#f59e0b' : 'transparent',
+              color: practiceMode === 'realtime' ? '#0f172a' : '#cbd5e1',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            data-testid="tab-practice-realtime"
+          >
+            <Zap size={16} /> ⚡ ରିଅଲ-ଟାଇମ୍ ଲାଇଭ୍ କୁଇଜ୍ (WebSocket Quiz)
+          </button>
+          <button
+            onClick={() => setPracticeMode('offline')}
+            style={{
+              flex: 1,
+              padding: '10px 14px',
+              borderRadius: '10px',
+              fontWeight: 700,
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              background: practiceMode === 'offline' ? '#f59e0b' : 'transparent',
+              color: practiceMode === 'offline' ? '#0f172a' : '#cbd5e1',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            data-testid="tab-practice-offline"
+          >
+            <BookOpen size={16} /> 📖 ଅଫଲାଇନ୍ ଡ୍ରିଲ୍ (Offline Practice)
+          </button>
+        </div>
+
+        {practiceMode === 'realtime' ? (
+          <RealtimeQuizSession 
+            onSessionComplete={(summary) => {
+              patch({ masteredQuiz: data.masteredQuiz + summary.total_correct });
+            }}
+          />
+        ) : (
+          <div className="card">
+            <div className="card-heading">
+              <div>
+                <span className="eyebrow">Class {learner.grade} · Question {index + 1} of {questions.length}</span>
+                <h2 style={{ marginTop: 4 }}>{q.prompt}</h2>
+              </div>
+              <button className="btn soft small" onClick={sayQuestion} data-testid="button-read-question">
+                <Volume2 size={16} /> Listen
+              </button>
             </div>
-            <button className="btn soft small" onClick={sayQuestion} data-testid="button-read-question">
-              <Volume2 size={16} /> Listen
-            </button>
-          </div>
-          <div className="smalltext muted">Select an option or write a short answer. Scripted demo quiz.</div>
-          <div style={{ marginTop: 17 }}>
-            {q.options.map((o, i) => (
-              <button
-                key={o}
-                onClick={() => { setChoice(i); setShort(''); setFeedback(''); }}
-                className={`quiz-option ${choice === i ? 'selected' : ''} ${feedback && i === q.correctOptionId ? 'correct' : ''} ${feedback && choice === i && i !== q.correctOptionId ? 'wrong' : ''}`}
-                data-testid={`button-option-${q.id}-${i}`}
-              >
-                <span className="tag" style={{ marginRight: 9 }}>{String.fromCharCode(65 + i)}</span>
-                {o}
+            <div className="smalltext muted">Select an option or write a short answer. Scripted demo quiz.</div>
+            <div style={{ marginTop: 17 }}>
+              {q.options.map((o, i) => (
+                <button
+                  key={o}
+                  onClick={() => { setChoice(i); setShort(''); setFeedback(''); }}
+                  className={`quiz-option ${choice === i ? 'selected' : ''} ${feedback && i === q.correctOptionId ? 'correct' : ''} ${feedback && choice === i && i !== q.correctOptionId ? 'wrong' : ''}`}
+                  data-testid={`button-option-${q.id}-${i}`}
+                >
+                  <span className="tag" style={{ marginRight: 9 }}>{String.fromCharCode(65 + i)}</span>
+                  {o}
+                </button>
+              ))}
+            </div>
+            <div className="smalltext muted" style={{ textAlign: 'center', margin: '8px 0' }}>— OR TYPE YOUR ANSWER —</div>
+            <textarea className="field" value={short} onChange={e => { setShort(e.target.value); setChoice(null); }} placeholder="Type your answer here…" data-testid="input-short-answer" />
+            {feedback && <div className="answer-panel" role="status" data-testid="status-quiz-feedback">{feedback}</div>}
+            <div className="row between" style={{ marginTop: 15 }}>
+              <button className="btn outline" onClick={restart} data-testid="button-quiz-restart">
+                <RotateCcw size={16} /> Restart
               </button>
-            ))}
-          </div>
-          <div className="smalltext muted" style={{ textAlign: 'center', margin: '8px 0' }}>— OR TYPE YOUR ANSWER —</div>
-          <textarea className="field" value={short} onChange={e => { setShort(e.target.value); setChoice(null); }} placeholder="Type your answer here…" data-testid="input-short-answer" />
-          {feedback && <div className="answer-panel" role="status" data-testid="status-quiz-feedback">{feedback}</div>}
-          <div className="row between" style={{ marginTop: 15 }}>
-            <button className="btn outline" onClick={restart} data-testid="button-quiz-restart">
-              <RotateCcw size={16} /> Restart
-            </button>
-            {feedback && index < questions.length - 1 ? (
-              <button className="btn" onClick={next} data-testid="button-next-question">
-                Next Question <ChevronRight size={16} />
-              </button>
-            ) : (
-              <button className="btn" onClick={submit} data-testid="button-submit-answer">
-                Check Answer <Check size={16} />
-              </button>
+              {feedback && index < questions.length - 1 ? (
+                <button className="btn" onClick={next} data-testid="button-next-question">
+                  Next Question <ChevronRight size={16} />
+                </button>
+              ) : (
+                <button className="btn" onClick={submit} data-testid="button-submit-answer">
+                  Check Answer <Check size={16} />
+                </button>
+              )}
+            </div>
+            {done && (
+              <div className="card" style={{ marginTop: 14, background: '#e4efe5' }}>
+                <b>Demo Quiz Completed!</b>
+                <div className="smalltext muted">Practice results updated in your local concept mastery map.</div>
+              </div>
             )}
           </div>
-          {done && (
-            <div className="card" style={{ marginTop: 14, background: '#e4efe5' }}>
-              <b>Demo Quiz Completed!</b>
-              <div className="smalltext muted">Practice results updated in your local concept mastery map.</div>
-            </div>
-          )}
-        </div>
+        )}
       </section>
+
 
       <aside className="stack">
         <div className="card">
