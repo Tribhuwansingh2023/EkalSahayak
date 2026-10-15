@@ -80,6 +80,8 @@ Desktop.ini
 # Local uploads and generated artifacts
 uploads/
 generated/
+!lib/**/generated/
+!lib/**/generated/**
 
 # Datasets, Models & Large Binaries
 dataset/
