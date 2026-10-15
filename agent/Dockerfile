@@ -38,13 +38,15 @@ RUN mkdir -p /app/audio_cache && chown -R ekaluser:ekal /app
 
 # Copy application source code
 COPY --chown=ekaluser:ekal app/ /app/app/
+COPY --chown=ekaluser:ekal server.py /app/
 
 USER ekaluser
 
+ENV PORT=8000
 EXPOSE 8000
 
 # Docker health check probing /health/live
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health/live || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/health/live || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2"]

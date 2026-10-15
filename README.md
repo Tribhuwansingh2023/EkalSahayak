@@ -379,6 +379,32 @@ pnpm --filter @workspace/lakshya-ai run dev
 
 ---
 
+## 🚀 1-Click Cloud Deployment (Render & Vercel)
+
+EkalSahayak includes out-of-the-box infrastructure manifests for **Render** (FastAPI backend + static frontend) and **Vercel** (frontend SPA).
+
+### Option A: Render Blueprint (1-Click Deployment)
+This repository includes a production-ready `render.yaml` blueprint that deploys both the FastAPI agent service and the React frontend.
+
+1. Push your repository to GitHub.
+2. Log in to [Render Dashboard](https://dashboard.render.com).
+3. Click **New +** → **Blueprint**.
+4. Select your `EkalSahayak` repository.
+5. Render will automatically detect `render.yaml` and configure:
+   - **Backend Web Service (`ekalsahayak-backend`)**: Python 3.12, dynamic `$PORT` binding, healthcheck on `/health/live`.
+   - **Frontend Static Site (`ekalsahayak-frontend`)**: Monorepo build with SPA client-side rewrite rules.
+6. Provide your `MONGODB_URI` and optional AI keys (`GEMINI_API_KEY`, `GROQ_API_KEY`) when prompted.
+7. Click **Apply** to deploy!
+
+### Option B: Deploying Frontend on Vercel
+1. Import the repository into [Vercel](https://vercel.com).
+2. Set **Root Directory** to `frontend` (or leave as root, both `frontend/vercel.json` and root `vercel.json` are pre-configured).
+3. Build Command: `pnpm run build`
+4. Output Directory: `artifacts/lakshya-ai/dist/public`
+5. Click **Deploy**.
+
+---
+
 ## 🧪 Running Tests & Quality Gates
 
 EkalSahayak is built to mission-critical software engineering standards with zero tolerance for broken endpoints or flakiness.

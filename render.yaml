@@ -1,0 +1,62 @@
+# =============================================================================
+# Render Blueprint Specification for EkalSahayak (Lakshya AI)
+# Docs: https://render.com/docs/blueprint-spec
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # 1. FastAPI Agent Engine (Backend Web Service)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: ekalsahayak-backend
+    runtime: python
+    rootDir: agent
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health/live
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: HOST
+        value: 0.0.0.0
+      - key: ENV
+        value: dev
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB_NAME
+        value: ekalsahayak_db
+      - key: CORS_ORIGINS
+        value: "http://localhost:5173,http://localhost:3000,https://ekalsahayak.vercel.app,https://ekalsahayak-frontend.onrender.com"
+      - key: SEED_DEMO
+        value: "true"
+      - key: STT_PROVIDER
+        value: "null"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+  # ---------------------------------------------------------------------------
+  # 2. React / Vite Frontend (Static Web Service)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: ekalsahayak-frontend
+    runtime: static
+    rootDir: frontend
+    plan: free
+    region: oregon
+    buildCommand: corepack enable && pnpm install && pnpm run build
+    staticPublishPath: artifacts/lakshya-ai/dist/public
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
