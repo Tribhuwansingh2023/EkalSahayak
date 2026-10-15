@@ -52,7 +52,7 @@ services:
     plan: free
     region: oregon
     buildCommand: corepack enable && pnpm install && pnpm run build
-    staticPublishPath: artifacts/lakshya-ai/dist/public
+    staticPublishPath: dist
     routes:
       - type: rewrite
         source: /*
