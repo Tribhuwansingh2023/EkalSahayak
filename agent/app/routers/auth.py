@@ -97,6 +97,7 @@ def build_user_public(user: dict) -> UserPublic:
         id=str(user.get("id") or user.get("_id")),
         username=user["username"],
         email=user["email"],
+        name=user.get("name") or user.get("username"),
         role=UserRole(user.get("role", "student")),
         grade=f"Class {user.get('grade')}" if isinstance(user.get("grade"), int) else str(user.get("grade", "Class 9")),
         language=user.get("language", "odia"),
@@ -136,6 +137,7 @@ async def register(
     user_doc = {
         "username": req.username,
         "email": req.email,
+        "name": req.name or req.username,
         "password_hash": pwd_hash,
         "grade": req.grade,
         "language": req.language,

@@ -27,6 +27,13 @@ export interface AgentDecisionTrace {
   decision_rationale: string;
   timestamp: string;
   duration_ms?: number;
+  event_type?: string;
+  status?: string;
+  parameters?: Record<string, any>;
+  concept_evaluated?: string;
+  gap_identified?: boolean;
+  rule_applied?: string;
+  recommended_activity?: any;
 }
 
 export interface MicroQuizItem {

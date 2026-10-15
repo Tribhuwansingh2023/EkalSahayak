@@ -60,8 +60,34 @@ async def test_teacher_classroom_and_period_plan():
         assert "text/html" in print_resp.headers["content-type"]
         assert "One-Page Period Plan" in print_resp.text
 
+        # 6. Classroom Command Center - Grades 3, 4, 5
+        cmd_resp = await client.get("/api/teacher/command-center", headers=headers)
+        assert cmd_resp.status_code == 200
+        cmd_data = cmd_resp.json()
+        assert cmd_data["title"] == "Classroom Command Center"
+        assert len(cmd_data["grades"]) == 3
+        grade_ids = [g["grade_id"] for g in cmd_data["grades"]]
+        assert grade_ids == [3, 4, 5]
+
+        # Verify Grade 5 handles missing assessment honestly without fabricated scores
+        grade_5 = next(g for g in cmd_data["grades"] if g["grade_id"] == 5)
+        assert grade_5["assessment"]["has_data"] is False
+        assert grade_5["assessment"]["students_needing_support"] is None
+        assert "pending" in grade_5["assessment"]["support_status_text"].lower()
+
+        # Verify Grade 3 and 4 have learning gap concepts identified
+        grade_3 = next(g for g in cmd_data["grades"] if g["grade_id"] == 3)
+        assert grade_3["assessment"]["has_data"] is True
+        assert len(grade_3["assessment"]["concepts_requiring_revision"]) > 0
+
+        # Verify grade-specific detail endpoint
+        g3_detail = await client.get("/api/teacher/command-center/grade/3", headers=headers)
+        assert g3_detail.status_code == 200
+        assert len(g3_detail.json()["students"]) > 0
+
 
 @pytest.mark.asyncio
+
 async def test_pilot_evaluation_and_judge_mode():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         # 1. Init pilot session

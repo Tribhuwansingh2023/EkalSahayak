@@ -112,23 +112,34 @@ async def quiz_websocket_endpoint(websocket: WebSocket):
             q = questions[current_idx]
             await websocket.send_json({
                 "type": "QUESTION",
+                "session_id": session_id,
                 "question_number": current_idx + 1,
+                "question_index": current_idx,
                 "total_questions": len(questions),
                 "question_id": q.id,
+                "topic": getattr(q, "topic", topic),
+                "difficulty": getattr(q, "difficulty", "medium"),
                 "prompt_odia": q.prompt_odia,
                 "prompt_english": q.prompt_english,
                 "options_odia": q.options_odia,
                 "options_english": q.options_english,
                 "time_limit_sec": 30,
+                "current_score": streak * 10,
+                "current_streak": streak,
             })
 
     if questions:
         await send_current_question()
     else:
-        await websocket.send_json({"type": "ERROR", "message": f"No questions available for topic '{topic}'."})
-        await websocket.close(code=1000)
-        _ACTIVE_USER_SESSIONS.discard(user_id)
-        return
+        # Fallback to any questions instead of abruptly closing
+        questions = await quiz_svc.get_questions_for_topic("all", limit=5)
+        if questions:
+            await send_current_question()
+        else:
+            await websocket.send_json({"type": "ERROR", "message": f"No questions available for topic '{topic}'."})
+            await websocket.close(code=1000)
+            _ACTIVE_USER_SESSIONS.discard(user_id)
+            return
 
     try:
         while True:
@@ -162,6 +173,41 @@ async def quiz_websocket_endpoint(websocket: WebSocket):
 
             if msg_type == "PING":
                 await websocket.send_json({"type": "PONG", "ts": datetime.now(UTC).isoformat()})
+                continue
+
+            if msg_type == "START_QUIZ":
+                req_topic = data.get("topic") or topic
+                if req_topic == "cell_structure":
+                    req_topic = "cell_biology"
+                topic = req_topic
+                questions = await quiz_svc.get_questions_for_topic(topic, limit=5)
+                current_idx = 0
+                streak = 0
+                answered_questions.clear()
+                session_id = str(uuid.uuid4())
+                await websocket.send_json({
+                    "type": "QUIZ_STARTED",
+                    "session_id": session_id,
+                    "topic": topic,
+                    "total_questions": len(questions),
+                })
+                if questions:
+                    await send_current_question()
+                continue
+
+            if msg_type == "REQUEST_HINT":
+                q_id = data.get("question_id")
+                full_q = await quiz_svc.get_question(q_id) if q_id else None
+                hint_text = ""
+                if full_q:
+                    hint_text = full_q.get("explanation_odia") or full_q.get("explanation_english") or "ଧ୍ୟାନ ଦିଅନ୍ତୁ: ପ୍ରଶ୍ନର ମୂଳ ତଥ୍ୟକୁ ସ୍ମରଣ କରନ୍ତୁ।"
+                else:
+                    hint_text = "ଧ୍ୟାନ ଦିଅନ୍ତୁ: ବିକଳ୍ପଗୁଡ଼ିକୁ ଭଲଭାବେ ପଢ଼ି ଉତ୍ତର ବାଛନ୍ତୁ।"
+                await websocket.send_json({
+                    "type": "HINT",
+                    "question_id": q_id,
+                    "hint_odia": hint_text,
+                })
                 continue
 
             if msg_type == "SUBMIT_ANSWER":
@@ -214,10 +260,17 @@ async def quiz_websocket_endpoint(websocket: WebSocket):
                     "type": "ANSWER_EVALUATION",
                     "question_id": q_id,
                     "is_correct": is_correct,
+                    "selected_index": selected_idx,
                     "correct_index": correct_idx,
+                    "points_earned": 10 if is_correct else 0,
+                    "current_score": streak * 10,
+                    "current_streak": streak,
+                    "mastery_delta": 0.05 if is_correct else -0.02,
+                    "new_mastery": round(new_mastery, 4),
+                    "topic": topic,
                     "explanation_odia": full_q.get("explanation_odia", ""),
                     "explanation_english": full_q.get("explanation_english", ""),
-                    "new_mastery": round(new_mastery, 4),
+                    "feedback_odia": "ସଠିକ୍ ଉତ୍ତର!" if is_correct else "ଭୁଲ୍ ଉତ୍ତର। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ!",
                     "streak": streak,
                     "streak_multiplier": 1.25 if streak >= 3 else 1.0,
                     "is_capped": is_capped,
@@ -230,6 +283,18 @@ async def quiz_websocket_endpoint(websocket: WebSocket):
                     await asyncio.sleep(1.0)  # Brief pedagogical pause
                     await send_current_question()
                 else:
+                    accuracy = round((len(answered_questions) / max(1, len(questions))) * 100)
+                    summary_payload = {
+                        "session_id": session_id,
+                        "student_id": user_id,
+                        "topic": topic,
+                        "total_questions": len(questions),
+                        "total_correct": len([q for q in answered_questions]),
+                        "accuracy_percentage": accuracy,
+                        "final_score": streak * 10,
+                        "badges": ["Super Student", "Quick Thinker"] if streak >= 2 else ["Quiz Participant"],
+                        "recommendation_odia": "ଖୁବ୍ ଭଲ ପ୍ରଦର୍ଶନ! ଆଗାମୀ ଅଧ୍ୟାୟ ଅଭ୍ୟାସ କରନ୍ତୁ।",
+                    }
                     await websocket.send_json({
                         "type": "SESSION_COMPLETE",
                         "session_id": session_id,
@@ -237,6 +302,7 @@ async def quiz_websocket_endpoint(websocket: WebSocket):
                         "final_mastery": round(new_mastery, 4),
                         "total_answered": len(answered_questions),
                         "message": "Quiz session complete!",
+                        "summary": summary_payload,
                     })
                     break
 

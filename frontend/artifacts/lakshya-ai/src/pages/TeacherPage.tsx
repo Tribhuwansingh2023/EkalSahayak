@@ -11,6 +11,10 @@ import {
   Sparkles,
   BookOpen,
   ArrowRight,
+  CheckCircle2,
+  Edit3,
+  GraduationCap,
+  RotateCcw,
 } from 'lucide-react';
 import { AppData } from '@/types/app';
 import { formatPercent, formatNumber } from '@/lib/formatters';
@@ -20,7 +24,9 @@ import { ensureAuthenticatedSession } from '@/lib/auth-service';
 interface TeacherPageProps {
   data: AppData;
   setNotice: (s: string) => void;
+  initialGrade?: string | number;
 }
+
 
 interface Classroom {
   _id: string;
@@ -89,7 +95,7 @@ interface PeriodPlan {
   printable_html_url: string;
 }
 
-export function TeacherPage({ data, setNotice }: TeacherPageProps) {
+export function TeacherPage({ data, setNotice, initialGrade }: TeacherPageProps) {
   const { t, i18n } = useTranslation();
   const numerals = getStoredNumerals();
 
@@ -107,6 +113,81 @@ export function TeacherPage({ data, setNotice }: TeacherPageProps) {
   // Plan My Period State
   const [periodPlan, setPeriodPlan] = useState<PeriodPlan | null>(null);
   const [planningPeriod, setPlanningPeriod] = useState(false);
+
+  // Grade-Specific Classroom View State
+  const [activeGradeView, setActiveGradeView] = useState<number | null>(() => {
+    if (initialGrade) return parseInt(String(initialGrade), 10);
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const g = params.get('grade');
+      if (g) return parseInt(g, 10);
+    }
+    return null;
+  });
+  const [gradeDetail, setGradeDetail] = useState<any | null>(null);
+  const [loadingGradeDetail, setLoadingGradeDetail] = useState(false);
+  const [editingActivity, setEditingActivity] = useState(false);
+  const [actNameInput, setActNameInput] = useState('');
+  const [actStatusInput, setActStatusInput] = useState('In Progress');
+  const [updatingActivity, setUpdatingActivity] = useState(false);
+
+  const fetchGradeDetail = async (gradeNum: number) => {
+    setLoadingGradeDetail(true);
+    try {
+      const token = await ensureAuthenticatedSession();
+      const res = await fetch(`/api/teacher/command-center/grade/${gradeNum}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const d = await res.json();
+        setGradeDetail(d);
+        if (d.current_activity) {
+          setActNameInput(d.current_activity.name || '');
+          setActStatusInput(d.current_activity.status || 'In Progress');
+        }
+      }
+    } catch {
+      console.warn('Could not fetch grade classroom details');
+    } finally {
+      setLoadingGradeDetail(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeGradeView) {
+      fetchGradeDetail(activeGradeView);
+    }
+  }, [activeGradeView]);
+
+  const handleUpdateActivity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeGradeView) return;
+    setUpdatingActivity(true);
+    try {
+      const token = await ensureAuthenticatedSession();
+      const res = await fetch('/api/teacher/command-center/activity', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          grade: activeGradeView,
+          activity_name: actNameInput,
+          status: actStatusInput,
+        }),
+      });
+      if (res.ok) {
+        setNotice(`Grade ${activeGradeView} activity updated to "${actNameInput}" (${actStatusInput})`);
+        setEditingActivity(false);
+        fetchGradeDetail(activeGradeView);
+      }
+    } catch {
+      setError('Could not update activity.');
+    } finally {
+      setUpdatingActivity(false);
+    }
+  };
 
   const fetchClassrooms = async () => {
     setLoading(true);
@@ -154,6 +235,7 @@ export function TeacherPage({ data, setNotice }: TeacherPageProps) {
       fetchDashboard(selectedClassId);
     }
   }, [selectedClassId]);
+
 
   const handleCreateClass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -254,8 +336,8 @@ export function TeacherPage({ data, setNotice }: TeacherPageProps) {
             {classrooms.map((c) => (
               <button
                 key={c._id}
-                onClick={() => setSelectedClassId(c._id)}
-                className={`btn small ${selectedClassId === c._id ? 'gold' : 'soft'}`}
+                onClick={() => { setSelectedClassId(c._id); setActiveGradeView(null); }}
+                className={`btn small ${selectedClassId === c._id && activeGradeView === null ? 'gold' : 'soft'}`}
                 style={{ borderRadius: 20 }}
               >
                 {c.name} ({c.student_count || 0})
@@ -263,13 +345,391 @@ export function TeacherPage({ data, setNotice }: TeacherPageProps) {
             ))}
           </div>
         )}
+
+        {/* Multi-Grade View Tabs (Grades 3, 4, 5) */}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 12, flexWrap: 'wrap', borderTop: '1px solid #e2d7c5', paddingTop: 12 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#6d675b' }}>Classroom View:</span>
+          <button
+            onClick={() => { setActiveGradeView(null); window.history.replaceState({}, '', '/teacher'); }}
+            className={`btn small ${activeGradeView === null ? 'gold' : 'soft'}`}
+            style={{ borderRadius: 16, padding: '4px 12px', minHeight: 30, fontSize: 12 }}
+            data-testid="tab-all-classes"
+          >
+            Composite (Class 9/8)
+          </button>
+          {[3, 4, 5].map((g) => (
+            <button
+              key={g}
+              onClick={() => { setActiveGradeView(g); window.history.replaceState({}, '', `/teacher?grade=${g}`); }}
+              className={`btn small ${activeGradeView === g ? 'gold' : 'soft'}`}
+              style={{ borderRadius: 16, padding: '4px 12px', minHeight: 30, fontSize: 12 }}
+              data-testid={`tab-grade-${g}`}
+            >
+              Grade {g}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Classroom Details & Real Dashboard */}
-      {dashboard && (
+      {/* Grade-Specific Classroom View (Grades 3, 4, 5) */}
+      {activeGradeView !== null && (
+        <div className="stack" data-testid={`grade-classroom-view-${activeGradeView}`}>
+          {/* Grade Top Banner */}
+          <div
+            style={{
+              background: '#f8fafc',
+              border: '1.5px solid #cbd5e1',
+              borderRadius: 16,
+              padding: '16px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 12,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 12,
+                  background: '#155c53',
+                  color: '#fff',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontWeight: 800,
+                  fontSize: 18,
+                }}
+              >
+                {activeGradeView}
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <h2 style={{ margin: 0, fontSize: 20, color: '#0f172a' }}>
+                    {gradeDetail?.classroom_name || `Multi-Grade Section · Grade ${activeGradeView}`}
+                  </h2>
+                  {gradeDetail?.is_demo && (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        background: '#fef3c7',
+                        color: '#92400e',
+                        border: '1px solid #fde68a',
+                        padding: '2px 8px',
+                        borderRadius: 999,
+                      }}
+                    >
+                      Demo data
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>
+                  Dedicated classroom monitoring and support view for Grade {activeGradeView} students.
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                className="btn small soft"
+                onClick={() => { setActiveGradeView(null); window.history.replaceState({}, '', '/teacher'); }}
+                style={{ borderRadius: 12 }}
+              >
+                ← Back to Composite
+              </button>
+              <button
+                className="btn small teal"
+                onClick={() => fetchGradeDetail(activeGradeView)}
+                disabled={loadingGradeDetail}
+                style={{ borderRadius: 12 }}
+              >
+                <RotateCcw size={14} className={loadingGradeDetail ? 'animate-spin' : ''} />
+                <span>Refresh</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Cards Grid: Activity & Assessment Summary */}
+          {gradeDetail && (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: 16,
+              }}
+            >
+              {/* Activity Card */}
+              <div
+                className="card"
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: 16,
+                  padding: 18,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 10,
+                  }}
+                >
+                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#64748b' }}>
+                    Current Learning Activity
+                  </span>
+                  <button
+                    className="btn small soft"
+                    style={{ padding: '3px 8px', fontSize: 11, minHeight: 26 }}
+                    onClick={() => setEditingActivity(!editingActivity)}
+                  >
+                    <Edit3 size={12} />
+                    <span>{editingActivity ? 'Cancel' : 'Update Activity'}</span>
+                  </button>
+                </div>
+
+                {!editingActivity ? (
+                  <div>
+                    <h3 style={{ margin: '0 0 8px', fontSize: 16, color: '#1e293b' }}>
+                      {gradeDetail.current_activity?.name || 'No active activity assigned'}
+                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                      <span
+                        className={`tag ${
+                          gradeDetail.current_activity?.status === 'Completed'
+                            ? 'teal'
+                            : gradeDetail.current_activity?.status === 'In Progress'
+                            ? 'gold'
+                            : ''
+                        }`}
+                        style={{ fontWeight: 700 }}
+                      >
+                        {gradeDetail.current_activity?.status || 'Not Started'}
+                      </span>
+                      {gradeDetail.current_activity?.progress_percent !== null && (
+                        <span style={{ fontSize: 12, color: '#64748b' }}>
+                          {gradeDetail.current_activity.progress_percent}% Complete
+                        </span>
+                      )}
+                    </div>
+                    {gradeDetail.current_activity?.progress_percent !== null && (
+                      <div className="progress-track" style={{ height: 6 }}>
+                        <i
+                          style={{
+                            width: `${gradeDetail.current_activity.progress_percent}%`,
+                            background:
+                              gradeDetail.current_activity.status === 'Completed' ? '#155c53' : '#e4aa37',
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <form onSubmit={handleUpdateActivity} style={{ marginTop: 8 }}>
+                    <div style={{ marginBottom: 8 }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                        Activity Name
+                      </label>
+                      <input
+                        type="text"
+                        value={actNameInput}
+                        onChange={(e) => setActNameInput(e.target.value)}
+                        className="field"
+                        style={{ padding: '8px 10px', fontSize: 13 }}
+                        required
+                      />
+                    </div>
+                    <div style={{ marginBottom: 10 }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                        Status
+                      </label>
+                      <select
+                        value={actStatusInput}
+                        onChange={(e) => setActStatusInput(e.target.value)}
+                        className="field"
+                        style={{ padding: '8px 10px', fontSize: 13 }}
+                      >
+                        <option value="Not Started">Not Started</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                      <button
+                        type="button"
+                        className="btn small soft"
+                        onClick={() => setEditingActivity(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="btn small gold"
+                        disabled={updatingActivity}
+                      >
+                        {updatingActivity ? 'Saving...' : 'Save Activity'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+
+              {/* Assessment & Support Needs Card */}
+              <div
+                className="card"
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: 16,
+                  padding: 18,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#64748b' }}>
+                    Assessment & Support Needs
+                  </span>
+                  <span
+                    className={`tag ${gradeDetail.assessment?.has_data ? (gradeDetail.assessment?.students_needing_support ? 'red' : 'teal') : ''}`}
+                    style={{ fontWeight: 700 }}
+                  >
+                    {gradeDetail.assessment?.has_data ? (gradeDetail.assessment?.students_needing_support ? `${gradeDetail.assessment.students_needing_support} Needing Support` : 'All On Track') : 'Assessment Pending'}
+                  </span>
+                </div>
+
+                <h3 style={{ margin: '0 0 6px', fontSize: 16, color: '#1e293b' }}>
+                  {gradeDetail.assessment?.has_data ? gradeDetail.assessment.support_status_text : 'Assessment pending'}
+                </h3>
+
+                {gradeDetail.assessment?.has_data ? (
+                  <div>
+                    {gradeDetail.assessment.concepts_requiring_revision?.length > 0 && (
+                      <div style={{ marginTop: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#c2410c', display: 'block', marginBottom: 4 }}>
+                          Concepts Requiring Revision:
+                        </span>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                          {gradeDetail.assessment.concepts_requiring_revision.map((c: string, i: number) => (
+                            <span
+                              key={i}
+                              style={{
+                                fontSize: 11,
+                                background: '#ffedd5',
+                                color: '#c2410c',
+                                border: '1px solid #fdba74',
+                                borderRadius: 6,
+                                padding: '3px 8px',
+                                fontWeight: 600,
+                              }}
+                            >
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {gradeDetail.assessment.average_progress !== null && (
+                      <div style={{ marginTop: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', marginBottom: 3 }}>
+                          <span>Cohort Mastery</span>
+                          <b>{gradeDetail.assessment.average_progress}%</b>
+                        </div>
+                        <div className="progress-track" style={{ height: 6 }}>
+                          <i style={{ width: `${gradeDetail.assessment.average_progress}%`, background: '#155c53' }} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 12, color: '#64748b', margin: '4px 0 0', lineHeight: 1.5 }}>
+                    Students in Grade {activeGradeView} have not completed their baseline diagnostic yet. Support needs will be computed automatically once tests are taken.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Student Roster Table */}
+          {gradeDetail?.students && (
+            <div
+              className="card"
+              style={{
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                borderRadius: 16,
+                padding: 18,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <h3 style={{ margin: 0, fontSize: 16, color: '#0f172a' }}>
+                  Enrolled Students ({gradeDetail.students.length})
+                </h3>
+                <span style={{ fontSize: 12, color: '#64748b' }}>
+                  Grade {activeGradeView} Cohort Roster
+                </span>
+              </div>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
+                      <th style={{ padding: '8px 10px' }}>Student Name</th>
+                      <th style={{ padding: '8px 10px' }}>Mastery</th>
+                      <th style={{ padding: '8px 10px' }}>Support Status</th>
+                      <th style={{ padding: '8px 10px' }}>Target / Stuck Concept</th>
+                      <th style={{ padding: '8px 10px' }}>Activity Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gradeDetail.students.map((st: any) => (
+                      <tr key={st.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '10px 10px', fontWeight: 600, color: '#1e293b' }}>
+                          {st.name}
+                        </td>
+                        <td style={{ padding: '10px 10px' }}>
+                          {st.mastery !== null ? `${Math.round(st.mastery * 100)}%` : '—'}
+                        </td>
+                        <td style={{ padding: '10px 10px' }}>
+                          <span
+                            className={`tag ${
+                              st.status === 'Needs Support'
+                                ? 'red'
+                                : st.status === 'On Track'
+                                ? 'teal'
+                                : st.status === 'Advanced'
+                                ? 'gold'
+                                : ''
+                            }`}
+                            style={{ fontWeight: 700 }}
+                          >
+                            {st.status}
+                          </span>
+                        </td>
+                        <td style={{ padding: '10px 10px', color: st.stuck_concept ? '#c2410c' : '#64748b' }}>
+                          {st.stuck_concept || '—'}
+                        </td>
+                        <td style={{ padding: '10px 10px', color: '#64748b', fontSize: 12 }}>
+                          {st.last_active}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Classroom Details & Real Dashboard (Composite View) */}
+      {activeGradeView === null && dashboard && (
         <div className="stack">
           {/* Invite Code Bar */}
           <div
+
             style={{
               background: '#f0fdfa',
               border: '1.5px solid #99f6e4',

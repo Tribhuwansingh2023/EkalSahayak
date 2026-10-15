@@ -40,7 +40,12 @@ class QuizService:
     async def get_questions_for_topic(self, topic: str, limit: int = 10, lang: str = "en") -> list[QuizQuestionPublic]:
         """Returns questions for a topic stripped of correct answers, preserving option order invariant."""
         db = get_database()
-        cursor = db.questions.find({"topic": topic}).limit(limit)
+        clean_topic = (topic or "").strip().lower()
+        if clean_topic == "cell_structure":
+            clean_topic = "cell_biology"
+
+        query = {} if (not clean_topic or clean_topic == "all") else {"topic": clean_topic}
+        cursor = db.questions.find(query).limit(limit)
         raw_items: list[dict[str, Any]] = []
 
         async for q in cursor:
@@ -50,8 +55,15 @@ class QuizService:
         if not raw_items:
             kb = get_kb_service()
             for q in kb.get_all_seed_questions():
-                if q.get("topic") == topic and len(raw_items) < limit:
+                q_topic = q.get("topic", "")
+                if (not clean_topic or clean_topic == "all" or q_topic == clean_topic) and len(raw_items) < limit:
                     raw_items.append(q)
+
+        # Final fallback if still none: fetch any available questions
+        if not raw_items:
+            cursor_all = db.questions.find({}).limit(limit)
+            async for q in cursor_all:
+                raw_items.append(q)
 
         results: list[QuizQuestionPublic] = []
         clean_lang = lang.strip().lower()

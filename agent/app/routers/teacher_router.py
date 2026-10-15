@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
-from app.security import get_current_user
+from app.security import get_current_user, get_current_user_optional
 from app.services.teacher_service import get_teacher_service
 
 logger = logging.getLogger("ekalsahayak.routers.teacher")
@@ -172,3 +172,115 @@ async def print_period_plan(
 </body>
 </html>"""
     return HTMLResponse(content=html)
+
+
+class UpdateGradeActivityRequest(BaseModel):
+    grade: int = Field(..., ge=1, le=12)
+    activity_name: str = Field(..., min_length=2, max_length=150)
+    status: str = Field(..., pattern="^(Not Started|In Progress|Completed)$")
+    progress_percent: int | None = Field(default=None, ge=0, le=100)
+
+
+@router.get("/command-center")
+async def get_classroom_command_center(current_user: dict[str, Any] = Depends(get_current_user)):
+    """Returns Classroom Command Center multi-grade overview across Grades 3, 4, and 5."""
+    teacher_svc = get_teacher_service()
+    return await teacher_svc.get_command_center_overview(teacher_id=current_user["id"])
+
+
+@router.get("/command-center/grade/{grade_id}")
+async def get_grade_classroom_detail(
+    grade_id: int,
+    current_user: dict[str, Any] = Depends(get_current_user),
+):
+    """Returns detailed grade-specific classroom data, student roster and revision needs."""
+    teacher_svc = get_teacher_service()
+    return await teacher_svc.get_grade_classroom_detail(
+        teacher_id=current_user["id"],
+        grade_num=grade_id,
+    )
+
+
+@router.post("/command-center/activity")
+async def update_grade_activity(
+    req: UpdateGradeActivityRequest,
+    current_user: dict[str, Any] = Depends(get_current_user),
+):
+    """Updates assigned learning activity and progress status for a grade."""
+    teacher_svc = get_teacher_service()
+    return await teacher_svc.update_grade_activity(
+        teacher_id=current_user["id"],
+        grade_num=req.grade,
+        activity_name=req.activity_name,
+        status=req.status,
+        progress_percent=req.progress_percent,
+    )
+
+
+class NextActionDecisionRequest(BaseModel):
+    action_id: str = Field(..., min_length=2, max_length=100)
+    decision: str = Field(..., pattern="^(approved|edited|rejected|started|completed|alternative_selected|dismissed)$")
+    selected_activity_id: str | None = None
+    notes: str | None = None
+
+
+@router.get("/next-action")
+async def get_next_best_teaching_action(
+    lang: str = Query(default="en"),
+    current_user: dict[str, Any] | None = Depends(get_current_user_optional),
+):
+    """Runs 5+1 specialized multi-agent workflow to recommend the Next Best Teaching Action."""
+    from app.agent.next_action_workflow import get_next_action_workflow
+
+    teacher_id = current_user["id"] if current_user else "default_teacher_1"
+    workflow = get_next_action_workflow()
+    return await workflow.run_workflow(teacher_id=teacher_id, lang=lang)
+
+
+@router.post("/next-action/decision")
+async def record_next_action_decision(
+    req: NextActionDecisionRequest,
+    current_user: dict[str, Any] | None = Depends(get_current_user_optional),
+):
+    """Teacher Approval & Feedback Agent: records approve, edit, reject, start, or dismissal events."""
+    from app.agent.next_action_workflow import get_next_action_workflow
+
+    teacher_id = current_user["id"] if current_user else "default_teacher_1"
+    workflow = get_next_action_workflow()
+    return await workflow.approval_agent.record_decision(
+        teacher_id=teacher_id,
+        action_id=req.action_id,
+        decision=req.decision,
+        selected_activity_id=req.selected_activity_id,
+        notes=req.notes,
+    )
+
+
+@router.get("/next-action/decision/{action_id}")
+async def get_action_decision(
+    action_id: str,
+    current_user: dict[str, Any] | None = Depends(get_current_user_optional),
+):
+    """Retrieves the latest recorded teacher decision for a specific recommendation action."""
+    from app.agent.next_action_workflow import get_next_action_workflow
+
+    teacher_id = current_user["id"] if current_user else "default_teacher_1"
+    workflow = get_next_action_workflow()
+    decision = await workflow.approval_agent.get_latest_decision(teacher_id, action_id)
+    return {"has_decision": decision is not None, "decision": decision}
+
+
+
+@router.get("/next-action/trace")
+async def get_next_action_trace(
+    current_user: dict[str, Any] | None = Depends(get_current_user_optional),
+):
+    """Returns the latest auditable execution trace from the specialized agent nodes."""
+    from app.agent.next_action_workflow import get_next_action_workflow
+
+    teacher_id = current_user["id"] if current_user else "default_teacher_1"
+    workflow = get_next_action_workflow()
+    res = await workflow.run_workflow(teacher_id=teacher_id)
+    return {"trace": res.get("trace", [])}
+
+

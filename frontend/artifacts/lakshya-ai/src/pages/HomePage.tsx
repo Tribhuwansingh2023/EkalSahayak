@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Mic,
@@ -19,6 +19,7 @@ import {
   FlaskConical,
 } from 'lucide-react';
 import { AppData, Student } from '@/types/app';
+import { ensureAuthenticatedSession } from '@/lib/auth-service';
 import {
   askAgent,
   submitQuizAnswer,
@@ -30,6 +31,14 @@ import { OdiaAudioPlayer } from '@/components/OdiaAudioPlayer';
 import { formatPercent, formatNumber } from '@/lib/formatters';
 import { getStoredNumerals, getStoredAiSameLanguage } from '@/i18n';
 import { getLanguage, SupportedLanguageCode } from '@/i18n/languages';
+import { ClassroomCommandCenter } from '@/components/ClassroomCommandCenter';
+import { NextBestTeachingAction } from '@/components/NextBestTeachingAction';
+import { LearningGapDetector } from '@/components/LearningGapDetector';
+import { LessonPlayerModal } from '@/components/LessonPlayerModal';
+import { DiagnosticModal, DiagnosticResult } from '@/components/DiagnosticModal';
+import { OfflineLearningStatus } from '@/components/OfflineLearningStatus';
+import { AgentDecisionTrace } from '@/lib/agent-client';
+import { createDiagnosticWorkflowTraces, createLearnerActionTrace } from '@/lib/diagnostic-workflow';
 
 interface HomePageProps {
   learner: Student;
@@ -41,6 +50,7 @@ interface HomePageProps {
   latestResponse: AgentInteractResponse | null;
   offlineQueueCount?: number;
   onManualSync?: () => void;
+  onRecordWorkflowTrace?: (traces: AgentDecisionTrace | AgentDecisionTrace[]) => void;
 }
 
 const CURRICULUM_CHAPTERS = [
@@ -61,6 +71,7 @@ export function HomePage({
   latestResponse,
   offlineQueueCount = 0,
   onManualSync,
+  onRecordWorkflowTrace,
 }: HomePageProps) {
   const { t, i18n } = useTranslation();
   const currentLang = (i18n.language || 'en') as SupportedLanguageCode;
@@ -74,9 +85,71 @@ export function HomePage({
   const [playingMiniId, setPlayingMiniId] = useState<string | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
   const [quizFeedback, setQuizFeedback] = useState<Record<string, { is_correct: boolean; message: string }>>({});
+  const [lessonModalOpen, setLessonModalOpen] = useState(false);
+  const [selectedLessonConceptId, setSelectedLessonConceptId] = useState<string | null>(null);
+  const [selectedLessonKind, setSelectedLessonKind] = useState<string>('Review');
+  const [diagModalOpen, setDiagModalOpen] = useState(false);
   const recognition = useRef<any>(null);
   const learnerName = learner.name || 'Lakshya';
   const speechAvailable = typeof window !== 'undefined' && !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+
+  // Load persisted diagnostic result on refresh/mount if not already in state
+  useEffect(() => {
+    if (!data.diagnosticAttempt) {
+      try {
+        const local = localStorage.getItem('ekalsahayak_diagnostic_' + learner.id);
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (parsed && parsed.score !== undefined) {
+            patch({
+              diagnosticAttempt: parsed,
+              learners: data.learners.map((l) =>
+                l.id === learner.id
+                  ? {
+                      ...l,
+                      diagnosticAttempt: parsed,
+                      masteryMap: {
+                        ...l.masteryMap,
+                        ...(parsed.mastery_seeded || {}),
+                      },
+                    }
+                  : l
+              ),
+            });
+            return;
+          }
+        }
+      } catch {}
+
+      // Check backend server for persisted diagnostic result
+      ensureAuthenticatedSession().then((token: string | null) => {
+        fetch('/api/assessment/diagnostic/results', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((d) => {
+            if (d && d.has_results && d.result) {
+              patch({
+                diagnosticAttempt: d.result,
+                learners: data.learners.map((l) =>
+                  l.id === learner.id
+                    ? {
+                        ...l,
+                        diagnosticAttempt: d.result,
+                        masteryMap: {
+                          ...l.masteryMap,
+                          ...(d.result.mastery_seeded || {}),
+                        },
+                      }
+                    : l
+                ),
+              });
+            }
+          })
+          .catch(() => {});
+      });
+    }
+  }, [learner.id, data.diagnosticAttempt]);
 
   // Quick doubts customized by language
   const quickDoubts = [
@@ -285,8 +358,35 @@ export function HomePage({
           </div>
         </div>
 
+        {/* Multi-Grade Classroom Command Center (Grades 3, 4, 5) */}
+        <ClassroomCommandCenter setPath={setPath} />
+
+        {/* Agent-Powered Next Best Teaching Action */}
+        <NextBestTeachingAction
+          setPath={setPath}
+          learner={learner}
+          diagnosticAttempt={data.diagnosticAttempt}
+          onOpenDiagnostic={() => setDiagModalOpen(true)}
+          onStartActivity={(activity) => {
+            if (onRecordWorkflowTrace) {
+              onRecordWorkflowTrace(createLearnerActionTrace('start_activity', activity.id, activity.title));
+            }
+            if (activity.id === 'act_g9_diagnostic' || activity.route === '/assessment/diagnostic') {
+              setDiagModalOpen(true);
+            } else if (activity.route.startsWith('/lesson')) {
+              const cid = activity.route.replace('/lesson/', '');
+              setSelectedLessonConceptId(cid);
+              setSelectedLessonKind('Review');
+              setLessonModalOpen(true);
+            } else {
+              setPath(activity.route);
+            }
+          }}
+        />
+
         {/* Input & Voice Controls */}
         <div className="card">
+
           <div className="card-heading">
             <h2>🎙️ {learnerName}, {t('questions.title')}</h2>
             <span className="tag teal">{currentMeta.nativeName} ({currentMeta.englishName})</span>
@@ -580,12 +680,34 @@ export function HomePage({
           <div className="concept-row" style={{ marginTop: 12 }}>
             <span className="concept-mark"><Clock3 size={17} /></span>
             <div style={{ flex: 1 }}>
-              <b>1-Hour Study Plan</b>
-              <div className="smalltext muted">Learn · Check · Review · Practice</div>
+              {data.diagnosticAttempt ? (
+                <>
+                  <b>1-Hour Study Plan</b>
+                  <div className="smalltext" style={{ color: '#0f766e', fontWeight: 600 }}>
+                    Diagnostic: {data.diagnosticAttempt.score}/{data.diagnosticAttempt.total} ({Math.round(data.diagnosticAttempt.percentage * 100)}%) · Active
+                  </div>
+                </>
+              ) : (
+                <>
+                  <b>5-Minute Baseline Diagnostic</b>
+                  <div className="smalltext muted">Map baseline mastery across core NCERT concepts</div>
+                </>
+              )}
             </div>
-            <button className="btn soft small" onClick={() => setPath('/plan')} data-testid="button-open-plan">
-              View <ChevronRight size={15} />
-            </button>
+            {data.diagnosticAttempt ? (
+              <button className="btn soft small" onClick={() => setPath('/plan')} data-testid="button-open-plan">
+                View <ChevronRight size={15} />
+              </button>
+            ) : (
+              <button
+                className="btn gold small"
+                onClick={() => setDiagModalOpen(true)}
+                data-testid="button-home-start-diagnostic"
+                style={{ fontSize: 12, fontWeight: 700 }}
+              >
+                Start Diagnostic
+              </button>
+            )}
           </div>
         </div>
 
@@ -598,27 +720,65 @@ export function HomePage({
             </button>
           </div>
           {[
-            { id: 'motion', name: 'Motion & Speed' },
-            { id: 'force', name: 'Force & Laws of Motion' },
-            { id: 'evaporation', name: 'Matter & Evaporation' },
-            { id: 'cell_biology', name: 'Cell Biology (Mitochondria)' },
+            { id: 'motion', concept_id: 'sci_ch7_c2_speed_velocity', name: 'Motion & Speed' },
+            { id: 'force', concept_id: 'sci_ch8_c2_first_law_inertia', name: 'Force & Laws of Motion' },
+            { id: 'evaporation', concept_id: 'sci_ch1_c5_evaporation', name: 'Matter & Evaporation' },
+            { id: 'cell_biology', concept_id: 'sci_ch5_c5_mitochondria_plastids', name: 'Cell Biology (Mitochondria)' },
           ].map((c) => {
-            const raw = learner.masteryMap[c.id] ?? 0;
+            const raw = learner.masteryMap[c.id] ?? (c.concept_id ? learner.masteryMap[c.concept_id] : undefined);
+            const hasAssessment = raw !== undefined && raw !== null;
+
+            if (!hasAssessment) {
+              return (
+                <div className="concept-row" key={c.id}>
+                  <span className="concept-mark" style={{ background: '#f1f5f9', color: '#94a3b8' }}>
+                    <Lightbulb size={17} />
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="row between">
+                      <b>{c.name}</b>
+                      <span
+                        className="tag"
+                        style={{ background: '#f1f5f9', color: '#64748b', fontSize: '11px', fontWeight: 600 }}
+                        data-testid={`mastery-status-${c.id}`}
+                      >
+                        Not assessed
+                      </span>
+                    </div>
+                    <div className="progress-track" style={{ background: '#f1f5f9' }}>
+                      <i style={{ width: '0%', background: '#cbd5e1' }} />
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
             // Mastery values: 0..1 ratio normalized
             const ratio = raw > 1 ? raw / 100 : raw;
             const percentStr = formatPercent(ratio, i18n.language, numerals);
             const percentWidth = Math.round(ratio * 100);
+            const state = ratio >= 0.80 ? 'Mastered' : ratio >= 0.50 ? 'In progress' : 'Needs practice';
+            const stateColor = ratio >= 0.80 ? '#10b981' : ratio >= 0.50 ? '#0284c7' : '#d97706';
 
             return (
               <div className="concept-row" key={c.id}>
-                <span className="concept-mark"><Lightbulb size={17} /></span>
+                <span className="concept-mark">
+                  <Lightbulb size={17} />
+                </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="row between">
                     <b>{c.name}</b>
-                    <span className="smalltext font-bold" data-testid={`mastery-percent-${c.id}`}>{percentStr}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="smalltext" style={{ fontSize: '11px', color: stateColor, fontWeight: 600 }}>
+                        {state}
+                      </span>
+                      <span className="smalltext font-bold" data-testid={`mastery-percent-${c.id}`}>
+                        {percentStr}
+                      </span>
+                    </div>
                   </div>
                   <div className="progress-track">
-                    <i style={{ width: `${percentWidth}%` }} />
+                    <i style={{ width: `${percentWidth}%`, background: stateColor }} />
                   </div>
                 </div>
               </div>
@@ -629,21 +789,99 @@ export function HomePage({
           </div>
         </div>
 
-        <div className="card" style={{ background: '#f5ebd5' }}>
-          <div className="row">
-            <span className="concept-mark" style={{ background: '#f2d27a' }}>
-              <Wifi size={17} />
-            </span>
-            <div>
-              <b>{data.onlineMode === 'offline' ? 'You are offline' : 'Ready for offline learning'}</b>
-              <div className="smalltext muted">{data.packs.filter((p) => p.downloaded).length} chapter packs stored on this phone</div>
-            </div>
-          </div>
-          <button className="btn outline small" style={{ marginTop: 12 }} onClick={() => setPath('/settings')} data-testid="button-offline-settings">
-            Offline Settings
-          </button>
-        </div>
+        {/* Learning Gap Detector Card */}
+        <LearningGapDetector
+          learner={learner}
+          setPath={setPath}
+          onStartLesson={(cid, kind) => {
+            setSelectedLessonConceptId(cid);
+            setSelectedLessonKind(kind || 'Review');
+            setLessonModalOpen(true);
+          }}
+          onOpenDiagnostic={() => setDiagModalOpen(true)}
+          onMasteryUpdated={(cid, newMastery) => {
+            patch({
+              learners: data.learners.map((l) =>
+                l.id === learner.id
+                  ? {
+                      ...l,
+                      masteryMap: {
+                        ...l.masteryMap,
+                        [cid]: newMastery,
+                      },
+                    }
+                  : l
+              ),
+            });
+          }}
+        />
+
+        <OfflineLearningStatus
+          onlineModeOverride={data.onlineMode}
+          onNavigateToSettings={() => setPath('/settings')}
+          onMasteryUpdated={(newMastery) => {
+            patch({
+              learners: data.learners.map((l) =>
+                l.id === learner.id
+                  ? {
+                      ...l,
+                      masteryMap: {
+                        ...l.masteryMap,
+                        ...newMastery,
+                      },
+                    }
+                  : l
+              ),
+            });
+          }}
+        />
       </aside>
+
+      {/* Interactive Modals for Lesson Player and Diagnostic Quiz */}
+      <DiagnosticModal
+        isOpen={diagModalOpen}
+        onClose={() => setDiagModalOpen(false)}
+        onCompleted={(result, answers) => {
+          const submissions = Object.entries(answers).map(([qid, idx]) => ({
+            question_id: qid,
+            selected_index: idx,
+          }));
+          const traces = createDiagnosticWorkflowTraces(result, submissions, learner);
+          if (onRecordWorkflowTrace) {
+            onRecordWorkflowTrace(traces);
+          }
+          patch({
+            diagnosticAttempt: result,
+            learners: data.learners.map((l) =>
+              l.id === learner.id
+                ? {
+                    ...l,
+                    diagnosticAttempt: result,
+                    masteryMap: {
+                      ...l.masteryMap,
+                      ...result.mastery_seeded,
+                    },
+                  }
+                : l
+            ),
+          });
+          try {
+            localStorage.setItem('ekalsahayak_diagnostic_' + learner.id, JSON.stringify(result));
+          } catch {}
+          setDiagModalOpen(false);
+        }}
+        initialResult={data.diagnosticAttempt}
+      />
+
+      <LessonPlayerModal
+        isOpen={lessonModalOpen}
+        conceptId={selectedLessonConceptId}
+        kind={selectedLessonKind}
+        onClose={() => setLessonModalOpen(false)}
+        onSessionComplete={() => {
+          setLessonModalOpen(false);
+        }}
+      />
     </div>
   );
 }

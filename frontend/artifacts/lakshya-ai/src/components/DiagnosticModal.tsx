@@ -13,40 +13,24 @@ interface DiagnosticQuestion {
   options: string[];
 }
 
-interface DiagnosticResult {
-  score: number;
-  total: number;
-  percentage: number;
-  mastery_seeded: Record<string, number>;
-  misconceptions_identified: Array<{
-    concept_id: string;
-    text: string;
-  }>;
-  breakdown: Array<{
-    question_id: string;
-    concept_id: string;
-    correct: boolean;
-    citation: string;
-    explanation: string;
-    misconception_detected?: string;
-  }>;
-  message: string;
-}
+import { DiagnosticBreakdownItem, DiagnosticResult, DiagnosticAttempt } from '@/types/app';
+export type { DiagnosticBreakdownItem, DiagnosticResult, DiagnosticAttempt };
 
-interface DiagnosticModalProps {
+export interface DiagnosticModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCompleted: () => void;
+  onCompleted: (result: DiagnosticResult, answers: Record<string, number>) => void;
+  initialResult?: DiagnosticResult | null;
 }
 
-export function DiagnosticModal({ isOpen, onClose, onCompleted }: DiagnosticModalProps) {
+export function DiagnosticModal({ isOpen, onClose, onCompleted, initialResult }: DiagnosticModalProps) {
   const { i18n } = useTranslation();
   const [questions, setQuestions] = useState<DiagnosticQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<DiagnosticResult | null>(null);
+  const [result, setResult] = useState<DiagnosticResult | null>(initialResult || null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,6 +38,11 @@ export function DiagnosticModal({ isOpen, onClose, onCompleted }: DiagnosticModa
       setResult(null);
       setCurrentIndex(0);
       setSelectedAnswers({});
+      return;
+    }
+
+    if (initialResult) {
+      setResult(initialResult);
       return;
     }
 
@@ -76,17 +65,24 @@ export function DiagnosticModal({ isOpen, onClose, onCompleted }: DiagnosticModa
     }
 
     loadQuestions();
-  }, [isOpen, i18n.language]);
+  }, [isOpen, initialResult, i18n.language]);
 
   if (!isOpen) return null;
 
   const currentQ = questions[currentIndex];
   const isSelected = currentQ ? selectedAnswers[currentQ.id] !== undefined : false;
-  const isLast = currentIndex === questions.length - 1;
+  const isLast = questions.length > 0 && currentIndex === questions.length - 1;
 
   const handleSelectOption = (index: number) => {
     if (!currentQ) return;
     setSelectedAnswers((prev) => ({ ...prev, [currentQ.id]: index }));
+  };
+
+  const handleRetake = () => {
+    setResult(null);
+    setCurrentIndex(0);
+    setSelectedAnswers({});
+    setError(null);
   };
 
   const handleNext = async () => {
@@ -120,12 +116,14 @@ export function DiagnosticModal({ isOpen, onClose, onCompleted }: DiagnosticModa
       if (!res.ok) throw new Error('Failed to evaluate diagnostic.');
       const data: DiagnosticResult = await res.json();
       setResult(data);
+      onCompleted(data, selectedAnswers);
     } catch (err: any) {
       setError(err.message || 'Error submitting assessment.');
     } finally {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="modal-scrim" data-testid="diagnostic-modal">
@@ -257,7 +255,7 @@ export function DiagnosticModal({ isOpen, onClose, onCompleted }: DiagnosticModa
               </p>
             </div>
 
-            {result.misconceptions_identified.length > 0 && (
+            {result.misconceptions_identified && result.misconceptions_identified.length > 0 && (
               <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: 14, marginBottom: 18 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#b45309', fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
                   <AlertTriangle size={16} />
@@ -287,26 +285,46 @@ export function DiagnosticModal({ isOpen, onClose, onCompleted }: DiagnosticModa
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     {b.correct ? <CheckCircle2 size={16} color="#16a34a" /> : <XCircle size={16} color="#dc2626" />}
                     <span style={{ fontSize: 12, fontWeight: 700, color: b.correct ? '#16a34a' : '#dc2626' }}>
-                      {b.correct ? 'Correct' : 'Needs Review'}
+                      {b.correct ? 'Correct' : b.flagged_for_review ? 'Needs Review (Unverified Mapping)' : 'Needs Review'}
                     </span>
                     <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 'auto' }}>{b.citation}</span>
                   </div>
+                  {b.prompt && (
+                    <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 600, color: '#1e293b' }}>
+                      Q{idx + 1}: {b.prompt}
+                    </p>
+                  )}
+                  {b.selected_text && !b.correct && (
+                    <div style={{ fontSize: 11, color: '#b91c1c', marginBottom: 4, background: '#fee2e2', padding: '3px 6px', borderRadius: 6 }}>
+                      Your Answer: {b.selected_text}
+                    </div>
+                  )}
                   <p style={{ margin: 0, fontSize: 12, color: '#475569', lineHeight: 1.4 }}>{b.explanation}</p>
                 </div>
               ))}
             </div>
 
-            <button
-              className="btn gold full-width"
-              onClick={() => {
-                onCompleted();
-                onClose();
-              }}
-              data-testid="button-view-plan"
-              style={{ padding: '12px 18px', fontSize: 15, fontWeight: 700, width: '100%' }}
-            >
-              Generate My Personalized NCERT Study Plan →
-            </button>
+            <div style={{ display: 'grid', gap: 8 }}>
+              <button
+                className="btn gold full-width"
+                onClick={() => {
+                  onCompleted(result, selectedAnswers);
+                  onClose();
+                }}
+                data-testid="button-view-plan"
+                style={{ padding: '12px 18px', fontSize: 15, fontWeight: 700, width: '100%' }}
+              >
+                Generate My Personalized NCERT Study Plan →
+              </button>
+              <button
+                className="btn outline full-width"
+                onClick={handleRetake}
+                data-testid="button-retake-diagnostic"
+                style={{ padding: '10px 16px', fontSize: 13, width: '100%', borderColor: '#cbd5e1', color: '#475569' }}
+              >
+                Retake Diagnostic Assessment
+              </button>
+            </div>
           </div>
         )}
       </div>

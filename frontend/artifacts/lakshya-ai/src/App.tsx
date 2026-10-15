@@ -8,6 +8,7 @@ import {
   Languages as LanguagesIcon,
   ListChecks,
   MoreHorizontal,
+  RefreshCw,
   Settings,
   ShieldCheck,
   Target,
@@ -20,6 +21,8 @@ import {
 import {
   syncOfflineQueue,
   getOfflineOutbox,
+  verifyServerReachability,
+  syncOfflineBatch,
 } from './lib/offline-sync';
 import {
   AgentDecisionTrace,
@@ -46,6 +49,7 @@ import { QuestionsPage } from './pages/QuestionsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TeacherPage } from './pages/TeacherPage';
 import { JudgeModePage } from './pages/JudgeModePage';
+import { SyncDataOfflinePage } from './pages/SyncDataOfflinePage';
 
 const initial: AppData = {
   learners: [
@@ -87,6 +91,7 @@ const navItems = [
   { href: '/inbox', key: 'nav.questions', defaultLabel: 'Questions', icon: AudioLines },
   { href: '/teacher', key: 'nav.teacherView', defaultLabel: 'Teacher', icon: Users },
   { href: '/judge', key: 'nav.judgeMode', defaultLabel: 'Judge Mode', icon: ShieldCheck },
+  { href: '/sync-offline', key: 'nav.syncOffline', defaultLabel: 'Sync Data Offline', icon: RefreshCw },
   { href: '/settings', key: 'nav.settings', defaultLabel: 'Settings', icon: Settings },
 ];
 
@@ -183,6 +188,21 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    if (data.workflowTraces && data.workflowTraces.length > 0 && agentTraces.length === 0) {
+      setAgentTraces(data.workflowTraces);
+    }
+  }, [data.workflowTraces]);
+
+  const handleRecordWorkflowTraces = (newTraces: AgentDecisionTrace | AgentDecisionTrace[]) => {
+    const list = Array.isArray(newTraces) ? newTraces : [newTraces];
+    setAgentTraces((prev) => {
+      const combined = [...prev, ...list];
+      patch({ workflowTraces: combined });
+      return combined;
+    });
+  };
+
   const activeStudent = data.learners.find((p) => p.id === data.activeId) || data.learners[0];
   const learner: Student = currentUser
     ? {
@@ -195,16 +215,21 @@ function App() {
         lastSubject: 'Science',
         lastChapter: 'NCERT Class 9',
         pin: '',
+        diagnosticAttempt: data.diagnosticAttempt || null,
         masteryMap:
           currentUser.mastery_map ||
           data.learners.find((l) => l.id === currentUser.username)?.masteryMap ||
           {},
         examDate: '2025-03-18',
       }
-    : activeStudent;
+    : {
+        ...activeStudent,
+        diagnosticAttempt: data.diagnosticAttempt || activeStudent.diagnosticAttempt || null,
+      };
 
   const learnerName = learner.name || learner.nameLatin || 'Student';
   const isTeacher = path === '/teacher';
+
 
   const handleOpenRegister = () => {
     setAuthModalMode('register');
@@ -300,8 +325,14 @@ function App() {
       setNotice(t('common.offline'));
       refreshOfflineCount();
     } else {
+      const isReachable = await verifyServerReachability();
+      if (!isReachable) {
+        setNotice('Backend unreachable. Remaining in verified offline mode.');
+        patch({ onlineMode: 'offline' });
+        return;
+      }
       patch({ onlineMode: 'online' });
-      const syncResult = await syncOfflineQueue();
+      const syncResult = await syncOfflineBatch();
       if (syncResult.syncedCount > 0) {
         setNotice(`Reconnected: Synced ${syncResult.syncedCount} offline items.`);
       }
@@ -316,9 +347,19 @@ function App() {
 
     refreshOfflineCount();
 
+    // Verify initial connection status
+    verifyServerReachability().then((isLive) => {
+      patch({ onlineMode: isLive ? 'online' : 'offline' });
+    });
+
     const handleOnline = async () => {
+      const isLive = await verifyServerReachability();
+      if (!isLive) {
+        patch({ onlineMode: 'offline' });
+        return;
+      }
       patch({ onlineMode: 'online' });
-      const res = await syncOfflineQueue();
+      const res = await syncOfflineBatch();
       if (res.syncedCount > 0) {
         setNotice(`Reconnected: Synced ${res.syncedCount} offline items.`);
         refreshOfflineCount();
@@ -378,6 +419,8 @@ function App() {
         return t('practice.title');
       case '/inbox':
         return t('questions.title');
+      case '/sync-offline':
+        return t('offlineSync.title', 'Sync Data Offline');
       case '/settings':
         return t('settings.title');
       case '/teacher':
@@ -605,6 +648,7 @@ function App() {
                   latestResponse={latestResponse}
                   offlineQueueCount={offlineQueueCount}
                   onManualSync={toggleConnectivity}
+                  onRecordWorkflowTrace={handleRecordWorkflowTraces}
                 />
               </Route>
               <Route path="/plan">
@@ -616,13 +660,20 @@ function App() {
               <Route path="/inbox">
                 <QuestionsPage data={data} patch={patch} setPath={setPath} />
               </Route>
+              <Route path="/sync-offline">
+                <SyncDataOfflinePage data={data} patch={patch} setNotice={setNotice} />
+              </Route>
               <Route path="/settings">
                 <SettingsPage data={data} patch={patch} setNotice={setNotice} />
               </Route>
               <Route path="/teacher">
                 <TeacherPage data={data} setNotice={setNotice} />
               </Route>
+              <Route path="/classroom/:grade">
+                {(params) => <TeacherPage data={data} setNotice={setNotice} initialGrade={params.grade} />}
+              </Route>
               <Route path="/judge">
+
                 <JudgeModePage />
               </Route>
               <Route>
@@ -636,6 +687,7 @@ function App() {
                   latestResponse={latestResponse}
                   offlineQueueCount={offlineQueueCount}
                   onManualSync={toggleConnectivity}
+                  onRecordWorkflowTrace={handleRecordWorkflowTraces}
                 />
               </Route>
             </Switch>

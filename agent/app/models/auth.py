@@ -3,6 +3,7 @@
 import re
 from datetime import datetime
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -91,14 +92,17 @@ class UserPreferencesUpdate(BaseModel):
 class UserRegisterRequest(BaseModel):
     """Schema for student/user registration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     username: str = Field(..., min_length=3, max_length=32, description="Unique username")
     email: EmailStr = Field(..., description="Valid user email address")
-    password: str = Field(..., min_length=10, max_length=128, description="Password (min 10 characters)")
-    grade: str = Field(default="Class 9", max_length=32)
+    password: str = Field(..., min_length=6, max_length=128, description="Password (min 6 characters)")
+    grade: Any = Field(default="Class 9")
     language: str = Field(default="odia", max_length=16)
     role: UserRole = Field(default=UserRole.STUDENT)
+    name: str | None = Field(default=None, max_length=64)
+    medium: str | None = Field(default=None, max_length=32)
+    home_dialect: str | None = Field(default=None, max_length=64)
 
     @field_validator("username")
     @classmethod
@@ -118,15 +122,22 @@ class UserRegisterRequest(BaseModel):
     def validate_password_strength(cls, v: str) -> str:
         if v.lower() in COMMON_PASSWORDS:
             raise ValueError("Password is too common and easily guessable. Please choose a stronger password.")
-        if len(v.strip()) < 10:
-            raise ValueError("Password must be at least 10 characters long.")
+        if len(v.strip()) < 6:
+            raise ValueError("Password must be at least 6 characters long.")
         return v
+
+    @field_validator("grade", mode="before")
+    @classmethod
+    def normalize_grade(cls, v: Any) -> str:
+        if isinstance(v, int):
+            return f"Grade {v}"
+        return str(v) if v else "Class 9"
 
 
 class UserLoginRequest(BaseModel):
     """Schema for user authentication."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     username_or_email: str = Field(..., min_length=3, max_length=128)
     password: str = Field(..., min_length=1, max_length=128)
@@ -140,7 +151,7 @@ class UserLoginRequest(BaseModel):
 class RefreshTokenRequest(BaseModel):
     """Schema for rotating access tokens."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     refresh_token: str = Field(..., min_length=16, description="Cryptographic refresh token")
 
@@ -154,6 +165,7 @@ class UserPublic(BaseModel):
     role: UserRole
     grade: str
     language: str
+    name: str | None = None
     preferences: UserPreferences = Field(default_factory=UserPreferences)
     created_at: datetime
 

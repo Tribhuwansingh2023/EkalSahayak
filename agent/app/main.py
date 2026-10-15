@@ -36,6 +36,7 @@ from app.routers import (
     health_router,
     kb_router,
     multiagent_router,
+    offline_quiz_router,
     pilot_router,
     quiz_router,
     study_router,
@@ -249,6 +250,7 @@ def create_app() -> FastAPI:
     app.include_router(agent_router)
     app.include_router(kb_router)
     app.include_router(multiagent_router)
+    app.include_router(offline_quiz_router)
     app.include_router(quiz_router)
     app.include_router(study_router)
     app.include_router(teacher_router)
@@ -263,14 +265,51 @@ def create_app() -> FastAPI:
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
-                "system": "EkalSahay AI Engine",
+                "system": "EkalSahayak (Lakshya AI) Local Hub",
+                "portal": "Teacher Dashboard",
                 "status": "operational",
-                "version": "2.0.0",
-                "grade": "Class 9 NCERT Pedagogical Curriculum",
+                "version": "2.1.0",
+                "grade": "Multi-Grade Odia NCERT Pedagogical Curriculum",
                 "frontend_app_url": "http://localhost:5173",
+                "student_portal_url": "/student",
+                "evaluation_history_url": "/history",
+                "published_quizzes_api": "/api/quizzes",
+                "results_api": "/api/results",
                 "api_documentation": "/docs",
                 "health_check": "/health",
-                "message": "EkalSahay backend is running. Open the frontend web app at http://localhost:5173",
+                "message": "EkalSahayak Local Hub is operational.",
+            },
+        )
+
+    # Student Portal Root
+    @app.get("/student", tags=["Status"])
+    async def student_section_index():
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "portal": "Student Section",
+                "status": "active",
+                "system": "EkalSahayak Student Learning Hub",
+                "published_quizzes_url": "/api/quizzes",
+                "results_url": "/api/results",
+                "frontend_sync_url": "http://localhost:5173/sync-offline",
+                "message": "Welcome to EkalSahayak Student Assessment Section.",
+            },
+        )
+
+    # Evaluation History Root
+    @app.get("/history", tags=["Status"])
+    async def evaluation_history_index():
+        from app.routers.offline_quiz_router import get_submitted_results
+        results_data = await get_submitted_results()
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "portal": "Evaluation History",
+                "status": "active",
+                "total_records": len(results_data),
+                "results": results_data,
+                "message": "Retrieved evaluation history records.",
             },
         )
 

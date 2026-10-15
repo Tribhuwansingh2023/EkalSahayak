@@ -58,6 +58,24 @@ class PlannerService:
 
         # Honest Empty State: If user has never taken diagnostic, show diagnostic requirement!
         if not diagnostic_completed or not mastery_graph:
+            all_c = get_all_concepts()
+            untested_concept_map = [
+                {
+                    "id": c.concept_id,
+                    "name": c.name,
+                    "chapter": c.chapter,
+                    "mastery": 0.0,
+                    "mastery_percent": None,
+                    "evidence_count": 0,
+                    "has_assessment": False,
+                    "state": "not_assessed",
+                    "status_label": "Not assessed",
+                    "pre": "Core Foundation Concept",
+                    "has_misconception": False,
+                    "misconception_text": None,
+                }
+                for c in all_c[:8]
+            ]
             return {
                 "needs_diagnostic": True,
                 "diagnostic_completed": False,
@@ -70,6 +88,7 @@ class PlannerService:
                 ),
                 "items": [],
                 "target_concepts": [],
+                "concept_map": untested_concept_map,
                 "time_budget_minutes": time_budget_minutes,
                 "total_est_minutes": 0,
             }
@@ -277,19 +296,38 @@ class PlannerService:
         # Concept Map nodes with REAL mastery and evidence counts
         concept_map: list[dict[str, Any]] = []
         for c in all_concepts[:8]:  # Show top 8 core science nodes
-            m_val = mastery_graph.get(c.concept_id, 0.0)
+            has_ev = (c.concept_id in mastery_graph) or (evidence_count.get(c.concept_id, 0) > 0)
+            m_val = mastery_graph.get(c.concept_id) if has_ev else None
             e_cnt = evidence_count.get(c.concept_id, 0)
+            has_misc = any(m.get("concept_id") == c.concept_id and not m.get("resolved") for m in misconceptions)
             prereq_names = [get_concept_by_id(p).name for p in c.prerequisites if get_concept_by_id(p)]
             pre_str = f"Prerequisite: {', '.join(prereq_names)}" if prereq_names else "Core Foundation Concept"
+
+            if not has_ev:
+                state = "not_assessed"
+                status_label = "Not assessed"
+            elif (m_val or 0.0) >= 0.80 and not has_misc:
+                state = "mastered"
+                status_label = "Mastered"
+            elif (m_val or 0.0) >= 0.50 and not has_misc:
+                state = "in_progress"
+                status_label = "In progress"
+            else:
+                state = "needs_practice"
+                status_label = "Needs practice"
 
             concept_map.append({
                 "id": c.concept_id,
                 "name": c.name,
                 "chapter": c.chapter,
-                "mastery": m_val,
+                "mastery": m_val if has_ev else 0.0,
+                "mastery_percent": round(m_val * 100) if m_val is not None else None,
                 "evidence_count": e_cnt,
+                "has_assessment": has_ev,
+                "state": state,
+                "status_label": status_label,
                 "pre": pre_str,
-                "has_misconception": any(m.get("concept_id") == c.concept_id and not m.get("resolved") for m in misconceptions),
+                "has_misconception": has_misc,
                 "misconception_text": next(
                     (m.get("text") for m in misconceptions if m.get("concept_id") == c.concept_id and not m.get("resolved")),
                     None,

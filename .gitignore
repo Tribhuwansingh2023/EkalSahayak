@@ -27,6 +27,10 @@ env/
 */env/
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
+*/.ruff_cache/
+.hypothesis/
+*/.hypothesis/
 
 # Audio Cache (Local synthesized speech files)
 .audio_cache/

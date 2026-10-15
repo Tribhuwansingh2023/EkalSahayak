@@ -368,45 +368,107 @@ class DiagnosticService:
 
         now_iso = datetime.now(UTC).isoformat()
 
+        TOPIC_ALIASES = {
+            "sci_ch1_c5_evaporation": "evaporation",
+            "sci_ch5_c5_mitochondria_plastids": "cell_biology",
+            "sci_ch5_c1_cell_discovery": "cell_biology",
+            "sci_ch5_c2_plasma_membrane_osmosis": "cell_membrane",
+            "sci_ch7_c2_speed_velocity": "motion",
+            "sci_ch8_c1_motion_reference": "motion",
+            "sci_ch8_c2_first_law_inertia": "force",
+            "sci_ch8_c4_first_law_inertia": "force",
+            "sci_ch9_c3_mass_vs_weight": "gravitation",
+        }
+
         for sub in submissions:
             qid = sub.get("question_id")
             selected_idx = sub.get("selected_index", -1)
             q = q_map.get(qid)
             if not q:
+                # Handle unmapped / unavailable question gracefully
+                breakdown.append({
+                    "question_id": qid,
+                    "concept_id": "unknown_concept",
+                    "status": "unverified_mapping",
+                    "correct": False,
+                    "selected_index": selected_idx,
+                    "correct_index": -1,
+                    "citation": "Mapping Unavailable",
+                    "explanation": "Question-to-concept mapping unavailable. Flagged for review.",
+                    "flagged_for_review": True,
+                })
                 continue
 
-            concept_id = q["concept_id"]
+            concept_id = q.get("concept_id")
+            if not concept_id:
+                # Flag for review rather than asserting verified misconception
+                breakdown.append({
+                    "question_id": qid,
+                    "concept_id": "unmapped",
+                    "status": "unverified_mapping",
+                    "correct": False,
+                    "selected_index": selected_idx,
+                    "correct_index": q.get("correct_index", -1),
+                    "citation": q.get("citation", "NCERT Class 9 Science"),
+                    "explanation": "Question metadata does not contain a verified concept mapping. Flagged for review.",
+                    "flagged_for_review": True,
+                })
+                continue
+
             is_correct = selected_idx == q["correct_index"]
+            prompt_text = (
+                q.get("prompt_or") if clean_lang in ("or", "odia")
+                else (q.get("prompt_hi") if clean_lang in ("hi", "hindi") else q.get("prompt_en", ""))
+            )
+            options_list = (
+                q.get("options_or") if clean_lang in ("or", "odia")
+                else (q.get("options_hi") if clean_lang in ("hi", "hindi") else q.get("options_en", []))
+            )
+            selected_text = options_list[selected_idx] if 0 <= selected_idx < len(options_list) else "Invalid Option"
+            correct_text = options_list[q["correct_index"]] if 0 <= q["correct_index"] < len(options_list) else ""
 
             if is_correct:
                 correct_count += 1
                 concept_mastery = 0.70
                 concept_confidence = 0.85
                 explanation = (
-                    q["explanation_or"] if clean_lang in ("or", "odia")
-                    else (q["explanation_hi"] if clean_lang in ("hi", "hindi") else q["explanation_en"])
+                    q.get("explanation_or") if clean_lang in ("or", "odia")
+                    else (q.get("explanation_hi") if clean_lang in ("hi", "hindi") else q.get("explanation_en", ""))
                 )
                 breakdown.append({
                     "question_id": qid,
                     "concept_id": concept_id,
+                    "topic_id": TOPIC_ALIASES.get(concept_id, concept_id),
+                    "prompt": prompt_text,
                     "correct": True,
                     "selected_index": selected_idx,
+                    "selected_text": selected_text,
                     "correct_index": q["correct_index"],
-                    "citation": q["citation"],
+                    "correct_text": correct_text,
+                    "citation": q.get("citation", "NCERT Class 9 Science"),
+                    "chapter": q.get("chapter", "Science"),
+                    "page": q.get("page", 0),
                     "explanation": explanation,
                 })
             else:
                 concept_mastery = 0.25
                 concept_confidence = 0.75
-                # Record specific misconception identified from wrong answer
-                wrong_misconception_text = q["misconceptions_by_option"].get(
+                # Record specific misconception identified from actual wrong answer
+                wrong_misconception_text = q.get("misconceptions_by_option", {}).get(
                     str(selected_idx),
-                    f"Misunderstanding of key principles in {q['chapter']}",
+                    f"Needs Review: Difficulty with core principles in {q.get('chapter', 'Science')}",
                 )
                 recorded_misconceptions.append({
                     "concept_id": concept_id,
+                    "topic_id": TOPIC_ALIASES.get(concept_id, concept_id),
+                    "question_id": qid,
+                    "prompt": prompt_text,
                     "text": wrong_misconception_text,
                     "wrong_option": selected_idx,
+                    "selected_text": selected_text,
+                    "correct_text": correct_text,
+                    "citation": q.get("citation", "NCERT Class 9 Science"),
+                    "chapter": q.get("chapter", "Science"),
                     "indicated_misconception": wrong_misconception_text,
                     "first_seen": now_iso,
                     "last_seen": now_iso,
@@ -414,28 +476,53 @@ class DiagnosticService:
                     "resolved": False,
                 })
                 explanation = (
-                    q["explanation_or"] if clean_lang in ("or", "odia")
-                    else (q["explanation_hi"] if clean_lang in ("hi", "hindi") else q["explanation_en"])
+                    q.get("explanation_or") if clean_lang in ("or", "odia")
+                    else (q.get("explanation_hi") if clean_lang in ("hi", "hindi") else q.get("explanation_en", ""))
                 )
                 breakdown.append({
                     "question_id": qid,
                     "concept_id": concept_id,
+                    "topic_id": TOPIC_ALIASES.get(concept_id, concept_id),
+                    "prompt": prompt_text,
                     "correct": False,
                     "selected_index": selected_idx,
+                    "selected_text": selected_text,
                     "correct_index": q["correct_index"],
-                    "citation": q["citation"],
+                    "correct_text": correct_text,
+                    "citation": q.get("citation", "NCERT Class 9 Science"),
+                    "chapter": q.get("chapter", "Science"),
+                    "page": q.get("page", 0),
                     "explanation": explanation,
                     "misconception_detected": wrong_misconception_text,
                 })
 
             mastery_graph[concept_id] = concept_mastery
+            if concept_id in TOPIC_ALIASES:
+                mastery_graph[TOPIC_ALIASES[concept_id]] = concept_mastery
             evidence_count[concept_id] = 1
             confidence[concept_id] = concept_confidence
             retention_scores[concept_id] = concept_mastery * 0.9
 
         pct_score = round(correct_count / max(1, total_questions), 2)
+        user_grade = profile.get("grade", 9)
+        if isinstance(user_grade, str) and user_grade.isdigit():
+            user_grade = int(user_grade)
 
-        # Update Mongo profile with REAL initialized mastery and diagnostics
+        attempt_record = {
+            "user_id": user_id,
+            "score": correct_count,
+            "total": total_questions,
+            "percentage": pct_score,
+            "grade": user_grade,
+            "subject": "Science",
+            "answers": submissions,
+            "breakdown": breakdown,
+            "mastery_seeded": mastery_graph,
+            "misconceptions_identified": recorded_misconceptions,
+            "timestamp": now_iso,
+        }
+
+        # Update Mongo profile with REAL initialized mastery, diagnostics, and full attempt record
         await db.profiles.update_one(
             {"user_id": user_id},
             {
@@ -448,10 +535,23 @@ class DiagnosticService:
                     "diagnostic_completed": True,
                     "diagnostic_score": pct_score,
                     "diagnostic_at": datetime.now(UTC),
+                    "diagnostic_result": attempt_record,
                     "updated_at": datetime.now(UTC),
+                },
+                "$push": {
+                    "diagnostic_history": attempt_record
                 }
             },
         )
+
+        try:
+            await db.diagnostic_attempts.insert_one({
+                "user_id": user_id,
+                "created_at": datetime.now(UTC),
+                **attempt_record,
+            })
+        except Exception as e:
+            logger.warning("Could not insert to diagnostic_attempts collection: %s", e)
 
         logger.info(
             "User %s completed diagnostic: %d/%d (%.0f%%). Seeded %d concept masteries and %d misconceptions.",
@@ -468,11 +568,50 @@ class DiagnosticService:
             "total": total_questions,
             "percentage": pct_score,
             "diagnostic_completed": True,
+            "grade": user_grade,
+            "subject": "Science",
+            "timestamp": now_iso,
             "mastery_seeded": mastery_graph,
             "misconceptions_identified": recorded_misconceptions,
             "breakdown": breakdown,
+            "diagnostic_result": attempt_record,
             "message": "Diagnostic evaluated successfully. Your personalized NCERT study plan is now ready!",
         }
+
+    async def get_diagnostic_results(self, user_id: str) -> dict[str, Any]:
+        """Retrieves user's persisted diagnostic results from database profile."""
+        profile_svc = get_profile_service()
+        profile = await profile_svc.get_or_create_profile(user_id)
+        diagnostic_result = profile.get("diagnostic_result")
+        if diagnostic_result:
+            if "_id" in diagnostic_result:
+                diagnostic_result["_id"] = str(diagnostic_result["_id"])
+            return {
+                "has_results": True,
+                "result": diagnostic_result,
+            }
+
+        if profile.get("diagnostic_completed"):
+            score_ratio = profile.get("diagnostic_score", 0.5)
+            synth_score = round(score_ratio * 6)
+            return {
+                "has_results": True,
+                "result": {
+                    "user_id": user_id,
+                    "score": synth_score,
+                    "total": 6,
+                    "percentage": score_ratio,
+                    "grade": profile.get("grade", 9),
+                    "subject": "Science",
+                    "answers": [],
+                    "breakdown": [],
+                    "mastery_seeded": profile.get("mastery_graph", {}),
+                    "misconceptions_identified": profile.get("misconceptions", []),
+                    "timestamp": profile.get("diagnostic_at", datetime.now(UTC)).isoformat() if hasattr(profile.get("diagnostic_at"), "isoformat") else str(profile.get("diagnostic_at")),
+                },
+            }
+
+        return {"has_results": False, "result": None}
 
 
 diagnostic_service = DiagnosticService()
@@ -480,3 +619,4 @@ diagnostic_service = DiagnosticService()
 
 def get_diagnostic_service() -> DiagnosticService:
     return diagnostic_service
+

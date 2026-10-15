@@ -49,14 +49,32 @@ export function clearAuthSession() {
   window.dispatchEvent(new CustomEvent('auth-changed', { detail: { user: null } }));
 }
 
+export function isTokenValid(token: string | null): boolean {
+  if (!token) return false;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    const payload = JSON.parse(atob(parts[1]));
+    if (payload.exp && payload.exp * 1000 < Date.now() + 5000) {
+      return false; // Expired or expiring soon
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function ensureAuthenticatedSession(): Promise<string | null> {
   const token = getStoredToken();
-  if (token) return token;
+  if (token && isTokenValid(token)) return token;
+
+  // Stale or missing session
+  clearAuthSession();
 
   try {
     const res = await fetch('/api/auth/guest', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
     if (res.ok) {
       const data = await res.json();
@@ -76,18 +94,28 @@ export async function loginUser(usernameOrEmail: string, password: string): Prom
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      username_or_email: usernameOrEmail,
+      username_or_email: usernameOrEmail.trim(),
       password: password
     })
   });
 
   const data = await resp.json();
   if (!resp.ok) {
-    throw new Error(data.detail || 'Login failed. Please check your credentials.');
+    const errorMsg = data.detail || data.error?.message || (data.error?.details && data.error.details[0]?.msg) || 'Login failed. Please check your credentials.';
+    throw new Error(errorMsg);
   }
 
-  saveAuthSession(data.access_token, data.user);
-  return data;
+  const u: AuthUser = {
+    id: data.user.id,
+    username: data.user.username,
+    email: data.user.email,
+    name: data.user.name || data.user.username,
+    grade: typeof data.user.grade === 'number' ? data.user.grade : (parseInt(data.user.grade?.replace(/\D/g, '')) || 9),
+    medium: data.user.language || 'Odia'
+  };
+
+  saveAuthSession(data.access_token, u);
+  return { ...data, user: u };
 }
 
 export async function registerUser(details: {
@@ -103,11 +131,12 @@ export async function registerUser(details: {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      username: details.username,
-      email: details.email,
+      username: details.username.trim(),
+      email: details.email.trim(),
       password: details.password,
-      name: details.name,
-      grade: details.grade,
+      name: details.name.trim(),
+      grade: `Grade ${details.grade}`,
+      language: (details.medium || 'Odia').toLowerCase(),
       medium: details.medium || 'Odia',
       home_dialect: details.home_dialect || 'Kui / Desia'
     })
@@ -115,11 +144,21 @@ export async function registerUser(details: {
 
   const data = await resp.json();
   if (!resp.ok) {
-    throw new Error(data.detail || 'Registration failed.');
+    const errorMsg = data.detail || data.error?.message || (data.error?.details && data.error.details[0]?.msg) || 'Registration failed.';
+    throw new Error(errorMsg);
   }
 
-  saveAuthSession(data.access_token, data.user);
-  return data;
+  const u: AuthUser = {
+    id: data.user.id,
+    username: data.user.username,
+    email: data.user.email,
+    name: data.user.name || details.name || data.user.username,
+    grade: typeof data.user.grade === 'number' ? data.user.grade : (parseInt(data.user.grade?.replace(/\D/g, '')) || details.grade || 9),
+    medium: data.user.language || details.medium || 'Odia'
+  };
+
+  saveAuthSession(data.access_token, u);
+  return { ...data, user: u };
 }
 
 export async function verifyCurrentSession(): Promise<AuthUser | null> {

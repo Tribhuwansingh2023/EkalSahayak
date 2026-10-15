@@ -11,6 +11,7 @@ export interface Student {
   pin: string;
   masteryMap: Record<string, number>;
   examDate: string;
+  diagnosticAttempt?: DiagnosticAttempt | null;
 }
 
 export interface Doubt {
@@ -61,6 +62,54 @@ export interface Question {
   remediation: string;
 }
 
+export interface DiagnosticBreakdownItem {
+  question_id: string;
+  concept_id: string;
+  topic_id?: string;
+  prompt?: string;
+  correct: boolean;
+  selected_index: number;
+  selected_text?: string;
+  correct_index: number;
+  correct_text?: string;
+  citation: string;
+  chapter?: string;
+  page?: number;
+  explanation: string;
+  misconception_detected?: string;
+  flagged_for_review?: boolean;
+}
+
+export interface DiagnosticAttempt {
+  score: number;
+  total: number;
+  percentage: number;
+  grade?: number;
+  subject?: string;
+  timestamp?: string;
+  answers?: any;
+  breakdown: DiagnosticBreakdownItem[];
+  mastery_seeded?: Record<string, number>;
+  misconceptions_identified?: Array<{
+    concept_id: string;
+    topic_id?: string;
+    question_id?: string;
+    prompt?: string;
+    text: string;
+    wrong_option?: number;
+    selected_text?: string;
+    correct_text?: string;
+    citation?: string;
+    chapter?: string;
+  }>;
+  user_id?: string;
+  message?: string;
+  diagnostic_completed?: boolean;
+  diagnostic_result?: any;
+}
+
+export type DiagnosticResult = DiagnosticAttempt;
+
 export interface AppData {
   learners: Student[];
   activeId: string;
@@ -75,4 +124,7 @@ export interface AppData {
   handsFree: boolean;
   trace: Trace[];
   faults: Record<string, boolean>;
+  diagnosticAttempt?: DiagnosticAttempt | null;
+  workflowTraces?: any[];
 }
+

@@ -5,6 +5,7 @@ from app.routers.auth import router as auth_router
 from app.routers.health import router as health_router
 from app.routers.kb import router as kb_router
 from app.routers.multiagent_router import router as multiagent_router
+from app.routers.offline_quiz_router import router as offline_quiz_router
 from app.routers.pilot_router import router as pilot_router
 from app.routers.quiz import router as quiz_router
 from app.routers.study_router import router as study_router
@@ -19,6 +20,7 @@ __all__ = [
     "health_router",
     "kb_router",
     "multiagent_router",
+    "offline_quiz_router",
     "pilot_router",
     "quiz_router",
     "study_router",
